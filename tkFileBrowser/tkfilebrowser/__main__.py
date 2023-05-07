@@ -24,6 +24,7 @@ import subprocess
 
 #from tkfilebrowser import askopendirname, askopenfilenames, asksaveasfilename, askopenpathnames
 from tkfilebrowser import askopendirname, askopenfilenames, asksaveasfilename
+from tkinter import messagebox
 
 try:
     import tkinter as tk
@@ -40,6 +41,7 @@ style = ttk.Style(root)
 style.theme_use("clam")
 root.configure(bg=style.lookup('TFrame', 'background'))
 
+"""
 def c_open_file_old():
     rep = filedialog.askopenfilenames(parent=root, initialdir='/', initialfile='tmp',
                                       filetypes=[("PNG", "*.png"),
@@ -61,7 +63,7 @@ def c_save_old():
                                                   ("Text files", "*.txt"),
                                                   ("All files", "*")])
     print(rep)
-
+"""
 
 def c_open_file():
     rep = askopenfilenames(parent=root, initialdir='/', initialfile='tmp',
@@ -96,9 +98,15 @@ def git_init():
     subprocess.run(['git', 'init', repo_dir])
 
 def git_add():
-    #operation
-    pass
-
+    #클릭해서 add하는 경우
+    repo_dir = askopendirname()
+    subprocess.run(['git', 'add', repo_dir])
+    """
+    #입력받아서 add하는 경우
+    msg = tk.simpledialog.askstring("add", "file name: ")
+    subprocess.run(['git', 'add', msg])
+    """
+    
 def git_restored():
     #operation
     pass
@@ -120,35 +128,44 @@ def git_mv():
     pass
 
 def git_commit():
-    #operation
-    pass
+    msg = tk.simpledialog.askstring("commit", "commit message: ")
+    
+    """
+    #입력받은 커밋 메세지 보여주기
+    if msg:
+        messagebox.showinfo("committed", f"Ok to commit: {msg}")
+    """
+    subprocess.run(['git', 'commit', '-m', msg])
 
 def git_status():
-    #operation
-    pass
+    repo_dir = askopendirname()
+    subprocess.run(['git', 'status', repo_dir])
 
 
 
+"""
+#기존의 기본 윈도우 파일탐색기 부분 삭제
 ttk.Label(root, text='Default dialogs').grid(                               row=0, column=0, padx=4, pady=4, sticky='ew')
 ttk.Button(root, text="Open files", command=c_open_file_old).grid(          row=1, column=0, padx=4, pady=4, sticky='ew')
 ttk.Button(root, text="Open folder", command=c_open_dir_old).grid(          row=2, column=0, padx=4, pady=4, sticky='ew')
 ttk.Button(root, text="Save file", command=c_save_old).grid(                row=3, column=0, padx=4, pady=4, sticky='ew')
+"""
 
-ttk.Label(root, text='tkfilebrowser dialogs').grid(                         row=0, column=1, padx=4, pady=4, sticky='ew')
-ttk.Button(root, text="Open files", command=c_open_file).grid(              row=1, column=1, padx=4, pady=4, sticky='ew')
-ttk.Button(root, text="Open folder", command=c_open_dir).grid(              row=2, column=1, padx=4, pady=4, sticky='ew')
-ttk.Button(root, text="Save file", command=c_save).grid(                    row=3, column=1, padx=4, pady=4, sticky='ew')
-ttk.Button(root, text="Open paths", command=c_path).grid(                   row=4, column=1, padx=4, pady=4, sticky='ew')
+ttk.Label(root, text='tkfilebrowser dialogs').grid(                         row=0, column=0, padx=4, pady=4, sticky='ew')
+ttk.Button(root, text="Open files", command=c_open_file).grid(              row=1, column=0, padx=4, pady=4, sticky='ew')
+ttk.Button(root, text="Open folder", command=c_open_dir).grid(              row=2, column=0, padx=4, pady=4, sticky='ew')
+ttk.Button(root, text="Save file", command=c_save).grid(                    row=3, column=0, padx=4, pady=4, sticky='ew')
+ttk.Button(root, text="Open paths", command=c_path).grid(                   row=4, column=0, padx=4, pady=4, sticky='ew')
 
-ttk.Label(root, text='Git opperations').grid(                               row=0, column=2, padx=4, pady=4, sticky='ew')
-ttk.Button(root, text="Git init", command=git_init).grid(                   row=1, column=2, padx=4, pady=4, sticky='ew')
-ttk.Button(root, text="Git add", command=git_add).grid(                     row=2, column=2, padx=4, pady=4, sticky='ew')
-ttk.Button(root, text="Git restored", command=git_restored).grid(           row=3, column=2, padx=4, pady=4, sticky='ew')
-ttk.Button(root, text="Git restore --stage", command=git_restore_s).grid(   row=4, column=2, padx=4, pady=4, sticky='ew')
-ttk.Button(root, text="Git rm", command=git_rm).grid(                       row=5, column=2, padx=4, pady=4, sticky='ew')
-ttk.Button(root, text="Git rm --cached", command=git_rm_c).grid(            row=6, column=2, padx=4, pady=4, sticky='ew')
-ttk.Button(root, text="Git mv", command=git_mv).grid(                       row=7, column=2, padx=4, pady=4, sticky='ew')
-ttk.Button(root, text="Git commit", command=git_commit).grid(               row=8, column=2, padx=4, pady=4, sticky='ew')
-ttk.Button(root, text="Git status", command=git_status).grid(               row=9, column=2, padx=4, pady=4, sticky='ew')
+ttk.Label(root, text='Git opperations').grid(                               row=0, column=1, padx=4, pady=4, sticky='ew')
+ttk.Button(root, text="Git init", command=git_init).grid(                   row=1, column=1, padx=4, pady=4, sticky='ew')
+ttk.Button(root, text="Git add", command=git_add).grid(                     row=2, column=1, padx=4, pady=4, sticky='ew')
+ttk.Button(root, text="Git restored", command=git_restored).grid(           row=3, column=1, padx=4, pady=4, sticky='ew')
+ttk.Button(root, text="Git restore --stage", command=git_restore_s).grid(   row=4, column=1, padx=4, pady=4, sticky='ew')
+ttk.Button(root, text="Git rm", command=git_rm).grid(                       row=5, column=1, padx=4, pady=4, sticky='ew')
+ttk.Button(root, text="Git rm --cached", command=git_rm_c).grid(            row=6, column=1, padx=4, pady=4, sticky='ew')
+ttk.Button(root, text="Git mv", command=git_mv).grid(                       row=7, column=1, padx=4, pady=4, sticky='ew')
+ttk.Button(root, text="Git commit", command=git_commit).grid(               row=8, column=1, padx=4, pady=4, sticky='ew')
+ttk.Button(root, text="Git status", command=git_status).grid(               row=9, column=1, padx=4, pady=4, sticky='ew')
 
 root.mainloop()
