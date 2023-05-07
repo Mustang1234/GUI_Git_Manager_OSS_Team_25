@@ -19,8 +19,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Example
 """
-
-from tkfilebrowser import askopendirname, askopenfilenames, asksaveasfilename, askopenpathnames
+import subprocess
+from tkfilebrowser import askopendirname, askopenfilenames, asksaveasfilename
+from tkinter import *
+folder_path=askopendirname()
 try:
     import tkinter as tk
     from tkinter import ttk
@@ -80,7 +82,7 @@ def c_save():
 
 
 def c_path():
-    rep = askopenpathnames(parent=root, initialdir='/', initialfile='tmp')
+    rep = askopendirname(parent=root, initialdir='/', initialfile='tmp')
     print(rep)
 
 
