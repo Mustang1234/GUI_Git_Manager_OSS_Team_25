@@ -19,10 +19,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Example
 """
+#
 import subprocess
+
+#from tkfilebrowser import askopendirname, askopenfilenames, asksaveasfilename, askopenpathnames
 from tkfilebrowser import askopendirname, askopenfilenames, asksaveasfilename
-from tkinter import *
-folder_path=askopendirname()
+
 try:
     import tkinter as tk
     from tkinter import ttk
@@ -82,8 +84,18 @@ def c_save():
 
 
 def c_path():
+    #rep = askopenpathnames(parent=root, initialdir='/', initialfile='tmp')
     rep = askopendirname(parent=root, initialdir='/', initialfile='tmp')
     print(rep)
+
+#git init 기능
+def create_git_repo():
+    # 파일 브라우저를 이용해 Git repository를 생성할 디렉토리를 선택합니다.
+    repo_dir = askopendirname()
+
+    # Git repository를 생성하는 명령어를 subprocess로 실행합니다.
+    subprocess.run(['git', 'init', repo_dir])
+
 
 
 ttk.Label(root, text='Default dialogs').grid(row=0, column=0, padx=4, pady=4, sticky='ew')
@@ -95,5 +107,9 @@ ttk.Button(root, text="Open files", command=c_open_file).grid(row=1, column=1, p
 ttk.Button(root, text="Open folder", command=c_open_dir).grid(row=2, column=1, padx=4, pady=4, sticky='ew')
 ttk.Button(root, text="Save file", command=c_save).grid(row=3, column=1, padx=4, pady=4, sticky='ew')
 ttk.Button(root, text="Open paths", command=c_path).grid(row=4, column=1, padx=4, pady=4, sticky='ew')
+
+#git init button
+ttk.Label(root, text='Git').grid(row=0, column=2, padx=4, pady=4, sticky='ew')
+ttk.Button(root, text="Git init", command=create_git_repo).grid(row=1, column=2, padx=4, pady=4, sticky='ew')
 
 root.mainloop()
