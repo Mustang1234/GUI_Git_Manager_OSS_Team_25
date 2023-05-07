@@ -40,6 +40,7 @@ style = ttk.Style(root)
 style.theme_use("clam")
 root.configure(bg=style.lookup('TFrame', 'background'))
 
+"""
 def c_open_file_old():
     rep = filedialog.askopenfilenames(parent=root, initialdir='/', initialfile='tmp',
                                       filetypes=[("PNG", "*.png"),
@@ -61,7 +62,7 @@ def c_save_old():
                                                   ("Text files", "*.txt"),
                                                   ("All files", "*")])
     print(rep)
-
+"""
 
 def c_open_file():
     rep = askopenfilenames(parent=root, initialdir='/', initialfile='tmp',
@@ -88,16 +89,41 @@ def c_path():
     print(rep)
 
 
-
-#git here
-
 def git_init():
-    repo_dir = askopendirname()
-    subprocess.run(['git', 'init', repo_dir])
+    rep = askopendirname(parent=root, initialdir='/', initialfile='tmp')
+    rep = subprocess.run(['git', 'init', rep]).args[2]
+    print(root,rep)
+    rep = askopendirname(parent=root, initialdir=rep, initialfile='tmp')
+    print(rep)
+
+
+
+    """
+fdsafdsa
+['git', 'init', 'C:\\Users\\32gur\\Desktop\\hi\\3-1\\OSS\\과제\\ufggchhgcjhg']
+<class 'list'>
+['git', 'init', 'C:\\Users\\32gur\\Desktop\\hi\\3-1\\OSS\\과제\\ufggchhgcjhg']
+<class 'str'>
+
+
+
+    rep = rep.stdout.splitlines()
+    print(rep)
+    print(rep[rep.index('C'):rep.index('.git')])
+    print(rep)
+    rep = askopendirname(parent=root, initialdir = rep, initialfile='tmp')
+    print(rep)"""
+    """
+    returned_value = 
+    Initialized empty Git repository in C:/Users/32gur/Desktop/hi/3-1/OSS/과제/.git/CompletedProcess(args=['git', 'init', 'C:\\Users\\32gur\\Desktop\\hi\\3-1\\OSS\\과제'], returncode=0)
+    Initialized empty Git repository in C:/Users/32gur/Desktop/hi/3-1/OSS/과제/rewq/.git/
+    CompletedProcess(args=['git', 'init', 'C:\\Users\\32gur\\Desktop\\hi\\3-1\\OSS\\과제\\rewq'], returncode=0)
+    """
 
 def git_add():
-    #operation
-    pass
+    repo_dir = askopendirname()
+    subprocess.run(['git', 'add', repo_dir])
+    
 
 def git_restored():
     #operation
@@ -127,28 +153,44 @@ def git_status():
     #operation
     pass
 
+def get_file_status(filepath):
+    # `git status --porcelain` 명령어로 파일의 상태를 체크합니다.
+    result = subprocess.run(['git', 'status', '--porcelain', filepath], capture_output=True, text=True)
+    output = result.stdout.strip()
+     # 출력된 결과에 따라 파일의 상태를 결정합니다.
+    if not output:
+        return 'unmodified'
+    elif output.startswith('M'):
+        return 'modified'
+    elif output.startswith('A'):
+        return 'staged'
+    elif output.startswith('??'):
+        return 'untracked'
 
 
+
+"""
 ttk.Label(root, text='Default dialogs').grid(                               row=0, column=0, padx=4, pady=4, sticky='ew')
 ttk.Button(root, text="Open files", command=c_open_file_old).grid(          row=1, column=0, padx=4, pady=4, sticky='ew')
 ttk.Button(root, text="Open folder", command=c_open_dir_old).grid(          row=2, column=0, padx=4, pady=4, sticky='ew')
 ttk.Button(root, text="Save file", command=c_save_old).grid(                row=3, column=0, padx=4, pady=4, sticky='ew')
+"""
 
-ttk.Label(root, text='tkfilebrowser dialogs').grid(                         row=0, column=1, padx=4, pady=4, sticky='ew')
-ttk.Button(root, text="Open files", command=c_open_file).grid(              row=1, column=1, padx=4, pady=4, sticky='ew')
-ttk.Button(root, text="Open folder", command=c_open_dir).grid(              row=2, column=1, padx=4, pady=4, sticky='ew')
-ttk.Button(root, text="Save file", command=c_save).grid(                    row=3, column=1, padx=4, pady=4, sticky='ew')
-ttk.Button(root, text="Open paths", command=c_path).grid(                   row=4, column=1, padx=4, pady=4, sticky='ew')
+ttk.Label(root, text='tkfilebrowser dialogs').grid(                         row=0, column=0, padx=4, pady=4, sticky='ew')
+ttk.Button(root, text="Open files", command=c_open_file).grid(              row=1, column=0, padx=4, pady=4, sticky='ew')
+ttk.Button(root, text="Open folder", command=c_open_dir).grid(              row=2, column=0, padx=4, pady=4, sticky='ew')
+ttk.Button(root, text="Save file", command=c_save).grid(                    row=3, column=0, padx=4, pady=4, sticky='ew')
+ttk.Button(root, text="Open paths", command=c_path).grid(                   row=4, column=0, padx=4, pady=4, sticky='ew')
 
-ttk.Label(root, text='Git opperations').grid(                               row=0, column=2, padx=4, pady=4, sticky='ew')
-ttk.Button(root, text="Git init", command=git_init).grid(                   row=1, column=2, padx=4, pady=4, sticky='ew')
-ttk.Button(root, text="Git add", command=git_add).grid(                     row=2, column=2, padx=4, pady=4, sticky='ew')
-ttk.Button(root, text="Git restored", command=git_restored).grid(           row=3, column=2, padx=4, pady=4, sticky='ew')
-ttk.Button(root, text="Git restore --stage", command=git_restore_s).grid(   row=4, column=2, padx=4, pady=4, sticky='ew')
-ttk.Button(root, text="Git rm", command=git_rm).grid(                       row=5, column=2, padx=4, pady=4, sticky='ew')
-ttk.Button(root, text="Git rm --cached", command=git_rm_c).grid(            row=6, column=2, padx=4, pady=4, sticky='ew')
-ttk.Button(root, text="Git mv", command=git_mv).grid(                       row=7, column=2, padx=4, pady=4, sticky='ew')
-ttk.Button(root, text="Git commit", command=git_commit).grid(               row=8, column=2, padx=4, pady=4, sticky='ew')
-ttk.Button(root, text="Git status", command=git_status).grid(               row=9, column=2, padx=4, pady=4, sticky='ew')
+ttk.Label(root, text='Git opperations').grid(                               row=0, column=1, padx=4, pady=4, sticky='ew')
+ttk.Button(root, text="Git init", command=git_init).grid(                   row=1, column=1, padx=4, pady=4, sticky='ew')
+ttk.Button(root, text="Git add", command=git_add).grid(                     row=2, column=1, padx=4, pady=4, sticky='ew')
+ttk.Button(root, text="Git restored", command=git_restored).grid(           row=3, column=1, padx=4, pady=4, sticky='ew')
+ttk.Button(root, text="Git restore --stage", command=git_restore_s).grid(   row=4, column=1, padx=4, pady=4, sticky='ew')
+ttk.Button(root, text="Git rm", command=git_rm).grid(                       row=5, column=1, padx=4, pady=4, sticky='ew')
+ttk.Button(root, text="Git rm --cached", command=git_rm_c).grid(            row=6, column=1, padx=4, pady=4, sticky='ew')
+ttk.Button(root, text="Git mv", command=git_mv).grid(                       row=7, column=1, padx=4, pady=4, sticky='ew')
+ttk.Button(root, text="Git commit", command=git_commit).grid(               row=8, column=1, padx=4, pady=4, sticky='ew')
+ttk.Button(root, text="Git status", command=git_status).grid(               row=9, column=1, padx=4, pady=4, sticky='ew')
 
 root.mainloop()
