@@ -414,7 +414,7 @@ class FileBrowser(tk.Toplevel):
                                        columns=("location", "size", "date"),
                                        displaycolumns=("size", "date"))
         # headings
-        self.right_tree.heading("#0", text=_("Name"), anchor="w",
+        self.right_tree.heading("#0", text=_("Namekkk"), anchor="w",
                                 command=lambda: self._sort_files_by_name(True))
         self.right_tree.heading("location", text=_("Location"), anchor="w",
                                 command=lambda: self._sort_by_location(False))

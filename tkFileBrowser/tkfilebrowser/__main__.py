@@ -38,6 +38,7 @@ except ImportError:
     import ttk
     import tkFileDialog as filedialog
 
+import filebrowser
 root = tk.Tk()
 
 style = ttk.Style(root)
@@ -45,172 +46,16 @@ style.theme_use("clam")
 root.configure(bg=style.lookup('TFrame', 'background'))
 
 def c_open_file():
-    rep = askopenfilenames(parent=root, initialdir='/', initialfile='tmp',
+    rep = filebrowser.FileBrowser(parent=root, initialdir='/', initialfile='tmp',
                            filetypes=[("Pictures", "*.png|*.jpg|*.JPG"),
                                       ("All files", "*")])
-    print(rep)
-
-
-def c_open_dir():
-    rep = askopendirname(parent=root, initialdir='/', initialfile='tmp')
-    print(rep)
-
-
-def c_save():
-    rep = asksaveasfilename(parent=root, defaultext=".png", initialdir='/tmp', initialfile='image.png',
-                            filetypes=[("Pictures", "*.png|*.jpg|*.JPG"),
-                                       ("Text files", "*.txt"),
-                                       ("All files", "*")])
-    print(rep)
-
-
-def c_path():
-    rep = askopendirname(parent=root, initialdir='/', initialfile='tmp')
-    print(rep)
-
-
-def git_init():
-    rep = askopendirname(parent=root, initialdir='/', initialfile='tmp')
-    rep = subprocess.run(['git', 'init', rep]).args[2]
-    print(root,rep)
-    rep = askopendirname(parent=root, initialdir=rep, initialfile='tmp')
+    # rep = askopenfilenames(parent=root, initialdir='/', initialfile='tmp',
+    #                        filetypes=[("Pictures", "*.png|*.jpg|*.JPG"),
+    #                                   ("All files", "*")])
     print(rep)
 
 
 
-    """
-fdsafdsa
-['git', 'init', 'C:\\Users\\32gur\\Desktop\\hi\\3-1\\OSS\\과제\\ufggchhgcjhg']
-<class 'list'>
-['git', 'init', 'C:\\Users\\32gur\\Desktop\\hi\\3-1\\OSS\\과제\\ufggchhgcjhg']
-<class 'str'>
-
-
-
-    rep = rep.stdout.splitlines()
-    print(rep)
-    print(rep[rep.index('C'):rep.index('.git')])
-    print(rep)
-    rep = askopendirname(parent=root, initialdir = rep, initialfile='tmp')
-    print(rep)"""
-    """
-    returned_value = 
-    Initialized empty Git repository in C:/Users/32gur/Desktop/hi/3-1/OSS/과제/.git/CompletedProcess(args=['git', 'init', 'C:\\Users\\32gur\\Desktop\\hi\\3-1\\OSS\\과제'], returncode=0)
-    Initialized empty Git repository in C:/Users/32gur/Desktop/hi/3-1/OSS/과제/rewq/.git/
-    CompletedProcess(args=['git', 'init', 'C:\\Users\\32gur\\Desktop\\hi\\3-1\\OSS\\과제\\rewq'], returncode=0)
-    """
-
-def git_add():
-    #해당 깃레포(디렉토리)를 선택하면 전체 수정파일을 staging area로 올려줌.
-    repo_dir = askopendirname()
-    os.chdir(repo_dir)
-    result = subprocess.run(['git', 'add', '.'])
-    
-    #추후에 메세지 박스 대신 root에서 띄우도록 수정
-    if result.returncode == 0:
-        messagebox.showinfo("Success", "git add successfully executed!")
-    else:
-        messagebox.showerror("Error", "git add failed.")
-    
-    """
-    #클릭해서 add하는 경우
-    repo_dir = askopendirname()
-    os.chdir(repo_dir)
-    subprocess.run(['git', 'add', repo_dir])
-    """
-    
-    """
-    #입력받아서 add하는 경우
-    repo_dir = askopendirname()
-    os.chdir(repo_dir)
-    msg = tk.simpledialog.askstring("add", "file name: ")
-    subprocess.run(['git', 'add', msg])
-    """
-    
-def git_restored():
-    #operation
-    pass
-
-def git_restore_s():
-    #operation
-    pass
-
-def git_rm():
-    #operation
-    pass
-
-def git_rm_c():
-    #operation
-    pass
-
-def git_mv():
-    #operation
-    pass
-
-def git_commit():
-    repo_dir = askopendirname()
-    os.chdir(repo_dir)
-    msg = tk.simpledialog.askstring("commit", "commit message: ") #커밋메세지 입력
-    """
-    #입력받은 커밋 메세지 보여주기
-    if msg:
-        messagebox.showinfo("committed", f"Ok to commit: {msg}")
-    """
-    result = subprocess.run(['git', 'commit', '-m', msg])
-    
-    #추후에 메세지 박스 대신 root에서 띄우도록 수정
-    if result.returncode == 0:
-        messagebox.showinfo("Success", "git commit successfully executed!")
-    else:
-        messagebox.showerror("Error", "git comiit failed.")
-
-def git_status():
-    repo_dir = askopendirname()
-    os.chdir(repo_dir)
-    result = subprocess.run(['git', 'status'], capture_output=True, text=True)
-    
-    #result를 화면창에 띄우기. 추후에 git_status_f 이용해서 좀 더 깔끔하게 파일 상태 보여주기
-    status_root = tk.Tk()
-    status_root.title("Git Status")
-    
-    text_box = ScrolledText(status_root)
-    text_box.pack(expand=True, fill='both')
-    text_box.insert('end', result.stdout)
-    
-    status_root.mainloop()
-    
-    
-def git_status_f(): #나중에 버튼 합쳐서 상태에 따라서 알아서 restore, restore --staged 구분해주는 기능 구현한다면 필요한 함수
-    # git status --porcelain : 파일의 상태 확인
-    filepath = askopendirname()
-    result = subprocess.run(['git', 'status', '--porcelain', filepath], capture_output=True, text=True)
-    output = result.stdout.strip()
-    if not output:
-        return 'unmodified'
-    elif output.startswith('M'):
-        return 'modified'
-    elif output.startswith('A'):
-        return 'staged'
-    elif output.startswith('??'):
-        return 'untracked'
-
-
-#ttk.Label(root, text='tkfilebrowser dialogs').grid(                         row=0, column=0, padx=4, pady=4, sticky='ew')
 ttk.Button(root, text="Open file Browser", command=c_open_file).grid(              row=1, column=0, padx=4, pady=4, sticky='ew')
-#ttk.Button(root, text="Open folder", command=c_open_dir).grid(              row=2, column=0, padx=4, pady=4, sticky='ew')
-#ttk.Button(root, text="Save file", command=c_save).grid(                    row=3, column=0, padx=4, pady=4, sticky='ew')
-#ttk.Button(root, text="Open paths", command=c_path).grid(                   row=4, column=0, padx=4, pady=4, sticky='ew')
-
-#ttk.Label(root, text='Git opperations').grid(                               row=0, column=1, padx=4, pady=4, sticky='ew')
-#ttk.Button(root, text="Git init", command=git_init).grid(                   row=1, column=1, padx=4, pady=4, sticky='ew')
-#ttk.Button(root, text="Git add", command=git_add).grid(                     row=2, column=1, padx=4, pady=4, sticky='ew')
-#ttk.Button(root, text="Git restored", command=git_restored).grid(           row=3, column=1, padx=4, pady=4, sticky='ew')
-#ttk.Button(root, text="Git restore --stage", command=git_restore_s).grid(   row=4, column=1, padx=4, pady=4, sticky='ew')
-#ttk.Button(root, text="Git rm", command=git_rm).grid(                       row=5, column=1, padx=4, pady=4, sticky='ew')
-#ttk.Button(root, text="Git rm --cached", command=git_rm_c).grid(            row=6, column=1, padx=4, pady=4, sticky='ew')
-#ttk.Button(root, text="Git mv", command=git_mv).grid(                       row=7, column=1, padx=4, pady=4, sticky='ew')
-#ttk.Button(root, text="Git commit", command=git_commit).grid(               row=8, column=1, padx=4, pady=4, sticky='ew')
-#ttk.Button(root, text="Git status", command=git_status).grid(               row=9, column=1, padx=4, pady=4, sticky='ew')
-#ttk.Button(root, text="Git status", command=git_status_f).grid(             row=9, column=1, padx=4, pady=4, sticky='ew')
 
 root.mainloop()
