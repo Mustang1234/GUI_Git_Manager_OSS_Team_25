@@ -148,8 +148,21 @@ def git_mv():
     pass
 
 def git_commit():
-    #operation
-    pass
+    repo_dir = askopendirname()
+    os.chdir(repo_dir)
+    msg = tk.simpledialog.askstring("commit", "commit message: ") #커밋메세지 입력
+    """
+    #입력받은 커밋 메세지 보여주기
+    if msg:
+        messagebox.showinfo("committed", f"Ok to commit: {msg}")
+    """
+    result = subprocess.run(['git', 'commit', '-m', msg])
+    
+    #추후에 메세지 박스 대신 root에서 띄우도록 수정
+    if result.returncode == 0:
+        messagebox.showinfo("Success", "git commit successfully executed!")
+    else:
+        messagebox.showerror("Error", "git comiit failed.")
 
 def git_status():
     #operation
