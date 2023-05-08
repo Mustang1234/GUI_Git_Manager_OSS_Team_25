@@ -21,6 +21,9 @@ Example
 """
 #
 import subprocess
+import os
+from tkinter.scrolledtext import ScrolledText
+from tkinter import messagebox
 
 #from tkfilebrowser import askopendirname, askopenfilenames, asksaveasfilename, askopenpathnames
 from tkfilebrowser import askopendirname, askopenfilenames, asksaveasfilename
@@ -98,11 +101,28 @@ def git_init():
     subprocess.run(['git', 'init', repo_dir])
 
 def git_add():
+    #해당 깃레포(디렉토리)를 선택하면 전체 수정파일을 staging area로 올려줌.
+    repo_dir = askopendirname()
+    os.chdir(repo_dir)
+    result = subprocess.run(['git', 'add', '.'])
+    
+    #추후에 메세지 박스 대신 root에서 띄우도록 수정
+    if result.returncode == 0:
+        messagebox.showinfo("Success", "git add successfully executed!")
+    else:
+        messagebox.showerror("Error", "git add failed.")
+    
+    """
     #클릭해서 add하는 경우
     repo_dir = askopendirname()
+    os.chdir(repo_dir)
     subprocess.run(['git', 'add', repo_dir])
     """
+    
+    """
     #입력받아서 add하는 경우
+    repo_dir = askopendirname()
+    os.chdir(repo_dir)
     msg = tk.simpledialog.askstring("add", "file name: ")
     subprocess.run(['git', 'add', msg])
     """
@@ -128,19 +148,13 @@ def git_mv():
     pass
 
 def git_commit():
-    msg = tk.simpledialog.askstring("commit", "commit message: ")
-    
-    """
-    #입력받은 커밋 메세지 보여주기
-    if msg:
-        messagebox.showinfo("committed", f"Ok to commit: {msg}")
-    """
-    subprocess.run(['git', 'commit', '-m', msg])
+    #operation
+    pass
 
 def git_status():
-    repo_dir = askopendirname()
-    subprocess.run(['git', 'status', repo_dir])
-
+    #operation
+    pass
+    
 
 
 """
