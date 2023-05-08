@@ -47,8 +47,7 @@ root.configure(bg=style.lookup('TFrame', 'background'))
 
 def c_open_file():
     rep = filebrowser.FileBrowser(parent=root, initialdir='/', initialfile='tmp',
-                           filetypes=[("Pictures", "*.png|*.jpg|*.JPG"),
-                                      ("All files", "*")])
+                           filetypes=[("All files", "*"), ("Pictures", "*.png|*.jpg|*.JPG")])
     # rep = askopenfilenames(parent=root, initialdir='/', initialfile='tmp',
     #                        filetypes=[("Pictures", "*.png|*.jpg|*.JPG"),
     #                                   ("All files", "*")])

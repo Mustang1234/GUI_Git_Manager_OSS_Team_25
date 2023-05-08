@@ -444,6 +444,7 @@ class FileBrowser(tk.Toplevel):
         self.right_tree.tag_configure("git_deleted", foreground="#A00000")
         self.right_tree.tag_configure("git_renamed", foreground="#A000A0")
         self.right_tree.tag_configure("git_copied", foreground="#A05000")
+
         if mode == "opendir":
             self.right_tree.tag_configure("file", foreground="gray")
             self.right_tree.tag_configure("file_link", foreground="gray")
