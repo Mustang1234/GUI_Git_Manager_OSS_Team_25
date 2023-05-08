@@ -44,30 +44,6 @@ style = ttk.Style(root)
 style.theme_use("clam")
 root.configure(bg=style.lookup('TFrame', 'background'))
 
-"""
-def c_open_file_old():
-    rep = filedialog.askopenfilenames(parent=root, initialdir='/', initialfile='tmp',
-                                      filetypes=[("PNG", "*.png"),
-                                                 ("JPEG", "*.jpg"),
-                                                 ("All files", "*")])
-    print(rep)
-
-
-def c_open_dir_old():
-    rep = filedialog.askdirectory(parent=root, initialdir='/tmp')
-    print(rep)
-
-
-def c_save_old():
-    rep = filedialog.asksaveasfilename(parent=root, defaultextension=".png",
-                                       initialdir='/tmp', initialfile='image.png',
-                                       filetypes=[("PNG", "*.png"),
-                                                  ("JPEG", "*.jpg"),
-                                                  ("Text files", "*.txt"),
-                                                  ("All files", "*")])
-    print(rep)
-"""
-
 def c_open_file():
     rep = askopenfilenames(parent=root, initialdir='/', initialfile='tmp',
                            filetypes=[("Pictures", "*.png|*.jpg|*.JPG"),
@@ -194,16 +170,6 @@ def git_status_f(): #나중에 버튼 합쳐서 상태에 따라서 알아서 re
         return 'staged'
     elif output.startswith('??'):
         return 'untracked'
-
-
-
-"""
-#기존의 기본 윈도우 파일탐색기 부분 삭제
-ttk.Label(root, text='Default dialogs').grid(                               row=0, column=0, padx=4, pady=4, sticky='ew')
-ttk.Button(root, text="Open files", command=c_open_file_old).grid(          row=1, column=0, padx=4, pady=4, sticky='ew')
-ttk.Button(root, text="Open folder", command=c_open_dir_old).grid(          row=2, column=0, padx=4, pady=4, sticky='ew')
-ttk.Button(root, text="Save file", command=c_save_old).grid(                row=3, column=0, padx=4, pady=4, sticky='ew')
-"""
 
 ttk.Label(root, text='tkfilebrowser dialogs').grid(                         row=0, column=0, padx=4, pady=4, sticky='ew')
 ttk.Button(root, text="Open files", command=c_open_file).grid(              row=1, column=0, padx=4, pady=4, sticky='ew')
