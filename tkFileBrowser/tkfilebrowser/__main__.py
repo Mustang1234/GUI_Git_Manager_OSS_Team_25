@@ -165,9 +165,36 @@ def git_commit():
         messagebox.showerror("Error", "git comiit failed.")
 
 def git_status():
-    #operation
-    pass
+    repo_dir = askopendirname()
+    os.chdir(repo_dir)
+    result = subprocess.run(['git', 'status'], capture_output=True, text=True)
     
+    #result를 화면창에 띄우기. 추후에 git_status_f 이용해서 좀 더 깔끔하게 파일 상태 보여주기
+    status_root = tk.Tk()
+    status_root.title("Git Status")
+    
+    text_box = ScrolledText(status_root)
+    text_box.pack(expand=True, fill='both')
+    text_box.insert('end', result.stdout)
+    
+    status_root.mainloop()
+    
+    
+def git_status_f(): #나중에 버튼 합쳐서 상태에 따라서 알아서 restore, restore --staged 구분해주는 기능 구현한다면 필요한 함수
+    # git status --porcelain : 파일의 상태 확인
+    filepath = askopendirname()
+    result = subprocess.run(['git', 'status', '--porcelain', filepath], capture_output=True, text=True)
+    output = result.stdout.strip()
+
+    if not output:
+        return 'unmodified'
+    elif output.startswith('M'):
+        return 'modified'
+    elif output.startswith('A'):
+        return 'staged'
+    elif output.startswith('??'):
+        return 'untracked'
+
 
 
 """
@@ -194,5 +221,6 @@ ttk.Button(root, text="Git rm --cached", command=git_rm_c).grid(            row=
 ttk.Button(root, text="Git mv", command=git_mv).grid(                       row=7, column=1, padx=4, pady=4, sticky='ew')
 ttk.Button(root, text="Git commit", command=git_commit).grid(               row=8, column=1, padx=4, pady=4, sticky='ew')
 ttk.Button(root, text="Git status", command=git_status).grid(               row=9, column=1, padx=4, pady=4, sticky='ew')
+#ttk.Button(root, text="Git status", command=git_status_f).grid(             row=9, column=1, padx=4, pady=4, sticky='ew')
 
 root.mainloop()
