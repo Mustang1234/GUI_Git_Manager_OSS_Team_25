@@ -20,14 +20,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 Example
 """
 #
+"""
 import subprocess
 import os
-from tkinter.scrolledtext import ScrolledText
-from tkinter import messagebox
-
 #from tkfilebrowser import askopendirname, askopenfilenames, asksaveasfilename, askopenpathnames
 from functions_custom import askopendirname, askopenfilenames, asksaveasfilename
 from tkinter import messagebox
+from tkinter.scrolledtext import ScrolledText
+from tkinter import messagebox
+"""
+
 
 try:
     import tkinter as tk
