@@ -281,10 +281,10 @@ class FileBrowser(tk.Toplevel):
         self.b_new_folder = ttk.Button(frame_bar, image=self.im_new,
                                        command=self.create_folder)
         self.b_update_status = ttk.Button(frame_bar, image=self.git_status_update,
-                                       command=self.create_folder)
+                                       command=self.update_status)
         if self.foldercreation:
-            self.b_new_folder.grid(row=0, column=1, sticky="e")
-        self.b_update_status.grid(row=0, column=2, sticky="e")
+            self.b_new_folder.grid(row=0, column=2, sticky="e")
+        self.b_update_status.grid(row=0, column=1, sticky="e")
         if mode == "save":
             ttk.Label(self.path_bar, text=_("Folder: ")).grid(row=0, column=0)
             self.defaultext = defaultext
@@ -431,7 +431,7 @@ class FileBrowser(tk.Toplevel):
         self.right_tree.heading("date", text=_("Modified"), anchor="w",
                                 command=lambda: self._sort_by_date(False))
         self.right_tree.heading("gitstatus", text=_("Git Status"), anchor="w",
-                                command=lambda: self._update_gitstatus(False))
+                                command=lambda: self._sort_by_status(False))
         # columns
         self.right_tree.column("#0", width=250)
         self.right_tree.column("location", width=100)
@@ -701,6 +701,27 @@ class FileBrowser(tk.Toplevel):
         self.right_tree.heading("date",
                                 command=lambda: self._sort_by_date(not reverse))
 
+    def _sort_by_status(self, reverse):#이거 내일해야지
+        print("_sort_by_status")
+        pass
+
+        """Sort files and folders by modification date."""
+        """files = list(self.right_tree.tag_has("gitstatus"))
+        files.extend(list(self.right_tree.tag_has("file_link")))
+        folders = list(self.right_tree.tag_has("folder"))
+        folders.extend(list(self.right_tree.tag_has("folder_link")))
+        l = len(folders)
+        folders.sort(reverse=reverse, key=getmtime)
+        files.sort(reverse=reverse, key=getmtime)
+
+        for index, item in enumerate(folders):
+            self.move_item(item, index)
+        for index, item in enumerate(files):
+            self.move_item(item, index + l)
+
+        self.right_tree.heading("date",
+                                command=lambda: self._sort_by_date(not reverse))"""
+
     # ---  file selection
     def _file_selection_save(self, event):
         """Save mode only: put selected file name in name_entry."""
@@ -843,7 +864,7 @@ class FileBrowser(tk.Toplevel):
         elif self.mode == "opendir":
             self.validate(event)
 
-    def _update_gitstatus(self, item):
+    def _update_gitstatus(self, item):#이거 뭐에여?
         git_status = self.git_handler.get_git_status(item)
         if git_status is None:
             return
@@ -1367,6 +1388,11 @@ class FileBrowser(tk.Toplevel):
             e.bind("<Escape>", cancel)
             e.bind("<FocusOut>", cancel)
             e.focus_set()
+
+    def update_status(self):#이겄도 내일 해야징~~
+        print("update_status")
+        pass
+
 
     def move_item(self, item, index):
         """Move item to index and update dark/light line alternance."""
