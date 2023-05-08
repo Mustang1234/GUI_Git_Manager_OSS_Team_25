@@ -411,10 +411,10 @@ class FileBrowser(tk.Toplevel):
 
         self.right_tree = ttk.Treeview(right_pane, selectmode=selectmode,
                                        style="right.tkfilebrowser.Treeview",
-                                       columns=("location", "size", "date"),
-                                       displaycolumns=("size", "date"))
+                                       columns=("location", "size", "date","gitstatus"),
+                                       displaycolumns=("size", "date","gitstatus"))
         # headings
-        self.right_tree.heading("#0", text=_("Namekkk"), anchor="w",
+        self.right_tree.heading("#0", text=_("Name"), anchor="w",
                                 command=lambda: self._sort_files_by_name(True))
         self.right_tree.heading("location", text=_("Location"), anchor="w",
                                 command=lambda: self._sort_by_location(False))
@@ -422,11 +422,14 @@ class FileBrowser(tk.Toplevel):
                                 command=lambda: self._sort_by_size(False))
         self.right_tree.heading("date", text=_("Modified"), anchor="w",
                                 command=lambda: self._sort_by_date(False))
+        self.right_tree.heading("gitstatus", text=_("Git Status"), anchor="w",
+                        command=lambda: self._update_gitstatus(False))
         # columns
         self.right_tree.column("#0", width=250)
         self.right_tree.column("location", width=100)
         self.right_tree.column("size", stretch=False, width=85)
         self.right_tree.column("date", width=120)
+        self.right_tree.column("gitstatus", width=120)
         # tags
         self.right_tree.tag_configure("0", background=tree_field_bg)
         self.right_tree.tag_configure("1", background=active_bg)
@@ -435,6 +438,12 @@ class FileBrowser(tk.Toplevel):
         self.right_tree.tag_configure("folder_link", image=self.im_folder_link)
         self.right_tree.tag_configure("file_link", image=self.im_file_link)
         self.right_tree.tag_configure("link_broken", image=self.im_link_broken)
+        self.right_tree.tag_configure("git_unmodified", foreground="#00A000")
+        self.right_tree.tag_configure("git_modified", foreground="#0000A0")
+        self.right_tree.tag_configure("git_added", foreground="#00A0A0")
+        self.right_tree.tag_configure("git_deleted", foreground="#A00000")
+        self.right_tree.tag_configure("git_renamed", foreground="#A000A0")
+        self.right_tree.tag_configure("git_copied", foreground="#A05000")
         if mode == "opendir":
             self.right_tree.tag_configure("file", foreground="gray")
             self.right_tree.tag_configure("file_link", foreground="gray")
@@ -823,6 +832,25 @@ class FileBrowser(tk.Toplevel):
         elif self.mode == "opendir":
             self.validate(event)
 
+    def _update_gitstatus(self, item):
+        git_status = self.git_handler.get_git_status(item)
+        if git_status is None:
+            return
+        if git_status == "M":
+            tag = "git_modified"
+        elif git_status == "A":
+            tag = "git_added"
+        elif git_status == "D":
+            tag = "git_deleted"
+        elif git_status.startswith("R"):
+            tag = "git_renamed"
+        elif git_status.startswith("C"):
+            tag = "git_copied"
+        else:
+            tag = "git_unmodified"
+        self.right_tree.item
+
+
     def _unpost(self, event):
         """Hide self.key_browse_entry."""
         if event.widget != self.key_browse_entry:
@@ -1020,13 +1048,14 @@ class FileBrowser(tk.Toplevel):
         # reorganize display if previous was 'recent'
         if not self.path_bar.winfo_ismapped():
             self.path_bar.grid()
-            self.right_tree.configure(displaycolumns=("size", "date"))
+            self.right_tree.configure(displaycolumns=("size", "date","gitstatus"))
             w = self.right_tree.winfo_width() - 205
             if w < 0:
                 w = 250
             self.right_tree.column("#0", width=w)
             self.right_tree.column("size", stretch=False, width=85)
             self.right_tree.column("date", width=120)
+            self.right_tree.column("gitstatus",width=120)
             if self.foldercreation:
                 self.b_new_folder.grid()
         # reset history
@@ -1113,13 +1142,15 @@ class FileBrowser(tk.Toplevel):
         # reorganize display if previous was 'recent'
         if not self.path_bar.winfo_ismapped():
             self.path_bar.grid()
-            self.right_tree.configure(displaycolumns=("size", "date"))
+            self.right_tree.configure(displaycolumns=("size", "date","gitstatus"))
             w = self.right_tree.winfo_width() - 205
             if w < 0:
                 w = 250
             self.right_tree.column("#0", width=w)
             self.right_tree.column("size", stretch=False, width=85)
             self.right_tree.column("date", width=120)
+            self.right_tree.column("gitstatus",width=120)
+            
             if self.foldercreation:
                 self.b_new_folder.grid()
         # reset history
@@ -1216,13 +1247,14 @@ class FileBrowser(tk.Toplevel):
         # reorganize display if previous was 'recent'
         if not self.path_bar.winfo_ismapped():
             self.path_bar.grid()
-            self.right_tree.configure(displaycolumns=("size", "date"))
+            self.right_tree.configure(displaycolumns=("size", "date","gitstatus"))
             w = self.right_tree.winfo_width() - 205
             if w < 0:
                 w = 250
             self.right_tree.column("#0", width=w)
             self.right_tree.column("size", stretch=False, width=85)
             self.right_tree.column("date", width=120)
+            self.right_tree.column("gitstatus",width=120)
             if self.foldercreation:
                 self.b_new_folder.grid()
         # reset history
