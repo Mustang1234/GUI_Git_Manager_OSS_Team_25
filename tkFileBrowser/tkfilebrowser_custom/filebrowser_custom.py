@@ -489,7 +489,7 @@ class FileBrowser(tk.Toplevel):
         ttk.Button(frame_buttons, text="git commit",
                    command=self.git_commit).pack(side="right", padx=4)
         ttk.Button(frame_buttons, text="git restore",
-                   command=self.git_restore).pack(side="right")
+                   command=self.git_restore).pack(side="right", padx=4)
 
         # ---  key browsing entry
         self.key_browse_var = tk.StringVar(self)
