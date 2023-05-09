@@ -29,7 +29,10 @@ from tkinter import messagebox
 from tkinter.scrolledtext import ScrolledText
 from tkinter import messagebox
 """
-
+import os
+import subprocess
+from functions_custom import askopendirname, askopenfilenames, asksaveasfilename
+from tkinter.scrolledtext import ScrolledText
 
 try:
     import tkinter as tk
@@ -56,7 +59,22 @@ def c_open_file():
     print(rep)
 
 
+#git add가 잘 되었는지 test를 위해서
+def git_status():
+    repo_dir = askopendirname()
+    os.chdir(repo_dir)
+    result = subprocess.run(['git', 'status'], capture_output=True, text=True)
+    
+    status_root = tk.Tk()
+    status_root.title("Git Status")
+    
+    text_box = ScrolledText(status_root)
+    text_box.pack(expand=True, fill='both')
+    text_box.insert('end', result.stdout)
+    
+    status_root.mainloop()
 
 ttk.Button(root, text="Open file Browser", command=c_open_file).grid(              row=1, column=0, padx=4, pady=4, sticky='ew')
+ttk.Button(root, text="Git status", command=git_status).grid(               row=9, column=1, padx=4, pady=4, sticky='ew')
 
 root.mainloop()

@@ -480,7 +480,9 @@ class FileBrowser(tk.Toplevel):
         ttk.Button(frame_buttons, text=cancelbuttontext,
                    command=self.quit).pack(side="right", padx=4)
         ttk.Button(frame_buttons, text="git init",
-                   command=self.git_init).pack(side="right", padx=8)
+                   command=self.git_init).pack(side="right")
+        ttk.Button(frame_buttons, text="git add",
+                   command=self.git_add).pack(side="right", padx=4)
 
         # ---  key browsing entry
         self.key_browse_var = tk.StringVar(self)
@@ -1436,6 +1438,12 @@ class FileBrowser(tk.Toplevel):
     def git_init(self):
         dir=self.history[len(self.history)-1]
         subprocess.run(['git', 'init', dir])
+        self._display_folder_walk(dir)
+
+    def git_add(self):
+        dir = self.history[len(self.history)-1]
+
+        result = subprocess.run(['git', 'add', '.'], cwd=dir)
         self._display_folder_walk(dir)
         
     def quit(self):
