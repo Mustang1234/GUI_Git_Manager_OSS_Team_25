@@ -1434,10 +1434,10 @@ class FileBrowser(tk.Toplevel):
         return self.result
     
     def git_init(self):
-        directory = filedialog.askdirectory()
-
-        result = subprocess.run(['git', 'init', directory], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
+        dir=self.history[len(self.history)-1]
+        subprocess.run(['git', 'init', dir])
+        self._display_folder_walk(dir)
+        
     def quit(self):
         """Destroy dialog."""
         self.destroy()
