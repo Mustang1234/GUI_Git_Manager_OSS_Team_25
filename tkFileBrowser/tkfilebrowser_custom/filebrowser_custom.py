@@ -23,6 +23,8 @@ Main class
 import os
 import tkinter as tk
 from tkinter import filedialog
+from tkinter import messagebox
+from tkinter import simpledialog
 import subprocess
 
 
@@ -492,6 +494,8 @@ class FileBrowser(tk.Toplevel):
                    command=self.git_restore).pack(side="right", padx=4)
         ttk.Button(frame_buttons, text="git restore --staged",
                    command=self.git_restore_s).pack(side="right", padx=4)
+        ttk.Button(frame_buttons, text="git rm",
+                   command=self.git_delete).pack(side="right",padx=4)
 
         # ---  key browsing entry
         self.key_browse_var = tk.StringVar(self)
@@ -1460,10 +1464,15 @@ class FileBrowser(tk.Toplevel):
         
         self.treeview = ttk.Treeview(self)
 
-        sel = self.right_tree.selection()[0]
+        sel = self.right_tree.selection()  # selection is not empty한지 확인해주기 위한 코드 추가
+        if len(sel) == 0:
+            print("No file selected.")
+            return
+        sel = sel[0]
         result = subprocess.run(['git', 'add', sel], cwd=dir)
         self._display_folder_walk(dir)
     
+    '''
     def git_commit(self):
         dir = self.history[len(self.history)-1]
         
@@ -1471,7 +1480,22 @@ class FileBrowser(tk.Toplevel):
         msg = tk.simpledialog.askstring("commit", "Enter your commit message: ") #커밋메세지 입력 나중에 문구 바꿔도 됨.
         
         result = subprocess.run(['git', 'commit', '-m', msg], cwd=dir)
-        self._display_folder_walk(dir)  
+        self._display_folder_walk(dir) 
+    '''
+    def git_commit(self):
+        dir = self.history[len(self.history)-1]
+            
+        os.chdir(dir)
+        msg = tk.simpledialog.askstring("commit", "Enter your commit message: ") #Enter your commit message. You can change the message later.
+        
+        if msg:
+            result = subprocess.run(['git', 'commit', '-m', msg], cwd=dir)
+            self._display_folder_walk(dir)
+        else:
+            messagebox.showerror("Error", "Commit message cannot be empty.")
+
+
+    
         
     def git_restore(self): # modified -> unmodified (아직 add전 수정만 한 상태에서 최근 커밋 상태로 돌아가기 == 수정 취소)
         dir = self.history[len(self.history)-1]
@@ -1489,13 +1513,34 @@ class FileBrowser(tk.Toplevel):
         dir = self.history[len(self.history)-1]
      
         file_tuple = self.right_tree.selection() #튜플형태
+        if len(file_tuple)>0:   # tuple이 empty한지 한번 더 체크
+            file_path = file_tuple[0] #클릭한 파일의 경로
+            split_string = file_path.split('\\')
+            file_name = split_string[-1] #경로의 마지막 부분이 file_name
+            
+            result = subprocess.run(['git', 'restore', '--staged', file_name], cwd=dir)
+            self._display_folder_walk(dir)  
+        else:
+            print("No file selected.")
         
-        file_path = file_tuple[0] #클릭한 파일의 경로
-        split_string = file_path.split('\\')
-        file_name = split_string[-1] #경로의 마지막 부분이 file_name
-        
-        result = subprocess.run(['git', 'restore', '--staged', file_name], cwd=dir)
-        self._display_folder_walk(dir)     
+
+
+    def git_delete(self): #committed -> staged
+        dir = self.history[len(self.history)-1]
+
+        file_tuple = self.right_tree.selection()
+        if len(file_tuple) > 0:
+            file_path = file_tuple[0]
+            split_string = file_path.split('\\')
+            file_name = split_string[-1]
+
+            result = subprocess.run(['git', 'rm', file_name], cwd=dir)
+            if result.returncode == 0:  # subprocess 실행이 정상적으로 끝난 경우
+                self._display_folder_walk(dir)
+            else:
+                print("Failed to remove file from git repository.")
+        else:
+            print("No file selected.")
         
     def quit(self):
         """Destroy dialog."""
