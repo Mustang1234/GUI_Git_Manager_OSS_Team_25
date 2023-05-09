@@ -482,12 +482,14 @@ class FileBrowser(tk.Toplevel):
                    command=self.quit).pack(side="right", padx=4)
         ttk.Button(frame_buttons, text="git init",
                    command=self.git_init).pack(side="right")
-        ttk.Button(frame_buttons, text="git add",
-                   command=self.git_add).pack(side="right", padx=4)
+        ttk.Button(frame_buttons, text="git add .",
+                   command=self.git_add_all).pack(side="right", padx=4)
+        ttk.Button(frame_buttons, text="git add file",
+                   command=self.git_add_certain).pack(side="right")
         ttk.Button(frame_buttons, text="git commit",
                    command=self.git_commit).pack(side="right", padx=4)
         ttk.Button(frame_buttons, text="git restore",
-                   command=self.git_restore).pack(side="right", padx=4)
+                   command=self.git_restore).pack(side="right")
 
         # ---  key browsing entry
         self.key_browse_var = tk.StringVar(self)
@@ -1445,10 +1447,19 @@ class FileBrowser(tk.Toplevel):
         subprocess.run(['git', 'init', dir])
         self._display_folder_walk(dir)
 
-    def git_add(self):
+    def git_add_all(self):
         dir = self.history[len(self.history)-1]
 
         result = subprocess.run(['git', 'add', '.'], cwd=dir)
+        self._display_folder_walk(dir)
+        
+    def git_add_certain(self):
+        dir = self.history[len(self.history)-1]
+        
+        self.treeview = ttk.Treeview(self)
+
+        sel = self.right_tree.selection()[0]
+        result = subprocess.run(['git', 'add', sel], cwd=dir)
         self._display_folder_walk(dir)
     
     def git_commit(self):
