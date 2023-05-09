@@ -20,6 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 Main class
 """
 
+import os
 import tkinter as tk
 from tkinter import filedialog
 import subprocess
@@ -483,6 +484,8 @@ class FileBrowser(tk.Toplevel):
                    command=self.git_init).pack(side="right")
         ttk.Button(frame_buttons, text="git add",
                    command=self.git_add).pack(side="right", padx=4)
+        ttk.Button(frame_buttons, text="git commit",
+                   command=self.git_commit).pack(side="right", padx=4)
 
         # ---  key browsing entry
         self.key_browse_var = tk.StringVar(self)
@@ -1445,6 +1448,16 @@ class FileBrowser(tk.Toplevel):
 
         result = subprocess.run(['git', 'add', '.'], cwd=dir)
         self._display_folder_walk(dir)
+    
+    def git_commit(self):
+        dir = self.history[len(self.history)-1]
+        
+        os.chdir(dir)
+        msg = tk.simpledialog.askstring("commit", "Enter your commit message: ") #커밋메세지 입력 나중에 문구 바꿔도 됨.
+        
+        result = subprocess.run(['git', 'commit', '-m', msg], cwd=dir)
+        self._display_folder_walk(dir)    
+        
         
     def quit(self):
         """Destroy dialog."""
