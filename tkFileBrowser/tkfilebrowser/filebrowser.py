@@ -20,6 +20,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 Main class
 """
 
+import tkinter as tk
+from tkinter import filedialog
+import subprocess
+
 
 import psutil
 from re import search
@@ -461,6 +465,8 @@ class FileBrowser(tk.Toplevel):
                    command=self.validate).pack(side="right")
         ttk.Button(frame_buttons, text=cancelbuttontext,
                    command=self.quit).pack(side="right", padx=4)
+        ttk.Button(frame_buttons, text="git init",
+                   command=self.git_init).pack(side="right", padx=8)
 
         # ---  key browsing entry
         self.key_browse_var = tk.StringVar(self)
@@ -1360,6 +1366,11 @@ class FileBrowser(tk.Toplevel):
     def get_result(self):
         """Return selection."""
         return self.result
+    
+    def git_init(self):
+        directory = filedialog.askdirectory()
+
+        result = subprocess.run(['git', 'init', directory], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     def quit(self):
         """Destroy dialog."""
