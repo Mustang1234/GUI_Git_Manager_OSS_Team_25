@@ -486,6 +486,8 @@ class FileBrowser(tk.Toplevel):
                    command=self.git_add).pack(side="right", padx=4)
         ttk.Button(frame_buttons, text="git commit",
                    command=self.git_commit).pack(side="right", padx=4)
+        ttk.Button(frame_buttons, text="git restore",
+                   command=self.git_restore).pack(side="right", padx=4)
 
         # ---  key browsing entry
         self.key_browse_var = tk.StringVar(self)
@@ -1456,7 +1458,19 @@ class FileBrowser(tk.Toplevel):
         msg = tk.simpledialog.askstring("commit", "Enter your commit message: ") #커밋메세지 입력 나중에 문구 바꿔도 됨.
         
         result = subprocess.run(['git', 'commit', '-m', msg], cwd=dir)
-        self._display_folder_walk(dir)    
+        self._display_folder_walk(dir)  
+        
+    def git_restore(self): # modified -> unmodified (아직 add전 수정만 한 상태에서 최근 커밋 상태로 돌아가기 == 수정 취소)
+        dir = self.history[len(self.history)-1]
+     
+        file_tuple = self.right_tree.selection() #튜플형태
+        
+        file_path = file_tuple[0] #클릭한 파일의 경로
+        split_string = file_path.split('\\')
+        file_name = split_string[-1] #경로의 마지막 부분이 file_name
+        
+        result = subprocess.run(['git', 'restore', file_name], cwd=dir)
+        self._display_folder_walk(dir)  
         
         
     def quit(self):
