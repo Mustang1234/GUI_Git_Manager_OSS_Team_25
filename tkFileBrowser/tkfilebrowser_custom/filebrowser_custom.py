@@ -491,11 +491,13 @@ class FileBrowser(tk.Toplevel):
         ttk.Button(frame_buttons, text="git commit",
                    command=self.git_commit).pack(side="right", padx=4)
         ttk.Button(frame_buttons, text="git restore",
-                   command=self.git_restore).pack(side="right", padx=4)
+                   command=self.git_restore).pack(side="right")
         ttk.Button(frame_buttons, text="git restore --staged",
                    command=self.git_restore_s).pack(side="right", padx=4)
         ttk.Button(frame_buttons, text="git rm",
-                   command=self.git_delete).pack(side="right",padx=4)
+                   command=self.git_rm).pack(side="right")
+        ttk.Button(frame_buttons, text="git rm --cached",
+                   command=self.git_rm_cached).pack(side="right", padx=4)
 
         # ---  key browsing entry
         self.key_browse_var = tk.StringVar(self)
@@ -1525,7 +1527,7 @@ class FileBrowser(tk.Toplevel):
         
 
 
-    def git_delete(self): #committed -> staged
+    def git_rm(self): #committed -> staged
         dir = self.history[len(self.history)-1]
 
         file_tuple = self.right_tree.selection()
@@ -1536,6 +1538,23 @@ class FileBrowser(tk.Toplevel):
 
             result = subprocess.run(['git', 'rm', file_name], cwd=dir)
             if result.returncode == 0:  # subprocess 실행이 정상적으로 끝난 경우
+                self._display_folder_walk(dir)
+            else:
+                print("Failed to remove file from git repository.")
+        else:
+            print("No file selected.")
+
+    def git_rm_cached(self):
+        dir = self.history[len(self.history)-1]
+
+        file_tuple = self.right_tree.selection()
+        if len(file_tuple) > 0:
+            file_path = file_tuple[0]
+            split_string = file_path.split('\\')
+            file_name = split_string[-1]
+
+            result = subprocess.run(['git', 'rm', '--cached', file_name], cwd=dir)
+            if result.returncode == 0:
                 self._display_folder_walk(dir)
             else:
                 print("Failed to remove file from git repository.")
