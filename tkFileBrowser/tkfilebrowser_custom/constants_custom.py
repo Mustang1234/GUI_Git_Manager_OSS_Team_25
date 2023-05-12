@@ -78,6 +78,7 @@ IM_DRIVE = os.path.join(PATH, "images", "drive.png")
 IM_RECENT = os.path.join(PATH, "images", "recent.png")
 IM_RECENT_24 = os.path.join(PATH, "images", "recent_24.png")
 GIT_STATUS_UPDATE = os.path.join(PATH, "images", "git_status_update.png")
+START_IMAGE = os.path.join(PATH, "images", "start_image.png")
 
 # ---  translation
 try:
