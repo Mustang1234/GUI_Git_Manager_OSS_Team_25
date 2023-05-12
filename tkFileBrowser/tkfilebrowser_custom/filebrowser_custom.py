@@ -19,10 +19,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Main class
 """
-
+import os
 import random
 import tkinter as tk
 from tkinter import filedialog
+from tkinter import messagebox
+from tkinter import simpledialog
 import subprocess
 
 
@@ -481,7 +483,21 @@ class FileBrowser(tk.Toplevel):
         ttk.Button(frame_buttons, text=cancelbuttontext,
                    command=self.quit).pack(side="right", padx=4)
         ttk.Button(frame_buttons, text="git init",
-                   command=self.git_init).pack(side="right", padx=8)
+                   command=self.git_init).pack(side="right")
+        ttk.Button(frame_buttons, text="git add .",
+                   command=self.git_add_all).pack(side="right", padx=4)
+        ttk.Button(frame_buttons, text="git add file",
+                   command=self.git_add_certain).pack(side="right")
+        ttk.Button(frame_buttons, text="git commit",
+                   command=self.git_commit).pack(side="right", padx=4)
+        ttk.Button(frame_buttons, text="git restore",
+                   command=self.git_restore).pack(side="right")
+        ttk.Button(frame_buttons, text="git restore --staged",
+                   command=self.git_restore_s).pack(side="right", padx=4)
+        ttk.Button(frame_buttons, text="git rm",
+                   command=self.git_rm).pack(side="right")
+        ttk.Button(frame_buttons, text="git rm --cached",
+                   command=self.git_rm_cached).pack(side="right", padx=4)
 
         # ---  key browsing entry
         self.key_browse_var = tk.StringVar(self)
@@ -1494,11 +1510,108 @@ class FileBrowser(tk.Toplevel):
         """Return selection."""
         return self.result
     
+
     def git_init(self):
         dir=self.getdir()
         subprocess.run(['git', 'init', dir])
         self._display_folder_walk(dir)
+
+
+    def git_add_all(self):
+        dir = self.getdir()
+
+        subprocess.run(['git', 'add', '.'], cwd=dir)
+        self._display_folder_walk(dir)
         
+    def git_add_certain(self):
+        dir = self.getdir()
+        
+        self.treeview = ttk.Treeview(self)
+
+        sel = self.right_tree.selection()  # selection is not empty한지 확인해주기 위한 코드 추가
+        if len(sel) == 0:
+            print("No file selected.")
+            return
+        sel = sel[0]
+        result = subprocess.run(['git', 'add', sel], cwd=dir)
+        self._display_folder_walk(dir)
+    
+
+    def git_commit(self):
+        dir = self.getdir()
+            
+        os.chdir(dir)
+        msg = tk.simpledialog.askstring("commit", "Enter your commit message: ") #Enter your commit message. You can change the message later.
+        
+        if msg:
+            result = subprocess.run(['git', 'commit', '-m', msg], cwd=dir)
+            self._display_folder_walk(dir)
+        else:
+            messagebox.showerror("Error", "Commit message cannot be empty.")
+ 
+
+    def git_restore(self): # modified -> unmodified (아직 add전 수정만 한 상태에서 최근 커밋 상태로 돌아가기 == 수정 취소)
+        dir = self.getdir()
+     
+        file_tuple = self.right_tree.selection() #튜플형태
+        
+        file_path = file_tuple[0] #클릭한 파일의 경로
+        split_string = file_path.split('\\')
+        file_name = split_string[-1] #경로의 마지막 부분이 file_name
+        
+        result = subprocess.run(['git', 'restore', file_name], cwd=dir)
+        self._display_folder_walk(dir)  
+    
+    def git_restore_s(self): # staged -> modified (add 한 상태에서 add 전 수정만 한 상태로 돌아가기 == add 취소)
+        dir = self.getdir()
+     
+        file_tuple = self.right_tree.selection() #튜플형태
+        if len(file_tuple)>0:   # tuple이 empty한지 한번 더 체크
+            file_path = file_tuple[0] #클릭한 파일의 경로
+            split_string = file_path.split('\\')
+            file_name = split_string[-1] #경로의 마지막 부분이 file_name
+            
+            result = subprocess.run(['git', 'restore', '--staged', file_name], cwd=dir)
+            self._display_folder_walk(dir)  
+        else:
+            print("No file selected.")
+
+
+    def git_rm(self): #committed -> staged
+        dir = self.getdir()
+
+        file_tuple = self.right_tree.selection()
+        if len(file_tuple) > 0:
+            file_path = file_tuple[0]
+            split_string = file_path.split('\\')
+            file_name = split_string[-1]
+
+            result = subprocess.run(['git', 'rm', file_name], cwd=dir)
+            if result.returncode == 0:  # subprocess 실행이 정상적으로 끝난 경우
+                self._display_folder_walk(dir)
+            else:
+                print("Failed to remove file from git repository.")
+        else:
+            print("No file selected.")
+
+    def git_rm_cached(self):
+        dir = self.getdir()
+
+        file_tuple = self.right_tree.selection()
+        if len(file_tuple) > 0:
+            file_path = file_tuple[0]
+            split_string = file_path.split('\\')
+            file_name = split_string[-1]
+
+            result = subprocess.run(['git', 'rm', '--cached', file_name], cwd=dir)
+            if result.returncode == 0:
+                self._display_folder_walk(dir)
+            else:
+                print("Failed to remove file from git repository.")
+        else:
+            print("No file selected.")
+    
+
     def quit(self):
         """Destroy dialog."""
         self.destroy()
