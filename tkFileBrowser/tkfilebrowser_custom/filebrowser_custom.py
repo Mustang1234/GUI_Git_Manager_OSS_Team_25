@@ -484,20 +484,18 @@ class FileBrowser(tk.Toplevel):
                    command=self.quit).pack(side="right", padx=4)
         ttk.Button(frame_buttons, text="git init",
                    command=self.git_init).pack(side="right")
-        ttk.Button(frame_buttons, text="git add .",
-                   command=self.git_add_all).pack(side="right", padx=4)
-        ttk.Button(frame_buttons, text="git add file",
-                   command=self.git_add_certain).pack(side="right")
+        ttk.Button(frame_buttons, text="git add",
+                   command=self.git_add).pack(side="right", padx=4)
         ttk.Button(frame_buttons, text="git commit",
-                   command=self.git_commit).pack(side="right", padx=4)
+                   command=self.git_commit).pack(side="right")
         ttk.Button(frame_buttons, text="git restore",
-                   command=self.git_restore).pack(side="right")
+                   command=self.git_restore).pack(side="right", padx=4)
         ttk.Button(frame_buttons, text="git restore --staged",
-                   command=self.git_restore_s).pack(side="right", padx=4)
+                   command=self.git_restore_s).pack(side="right")
         ttk.Button(frame_buttons, text="git rm",
-                   command=self.git_rm).pack(side="right")
+                   command=self.git_rm).pack(side="right", padx=4)
         ttk.Button(frame_buttons, text="git rm --cached",
-                   command=self.git_rm_cached).pack(side="right", padx=4)
+                   command=self.git_rm_cached).pack(side="right")
 
         # ---  key browsing entry
         self.key_browse_var = tk.StringVar(self)
@@ -1515,29 +1513,28 @@ class FileBrowser(tk.Toplevel):
         dir=self.getdir()
         subprocess.run(['git', 'init', dir])
         self._display_folder_walk(dir)
-
-
-    def git_add_all(self):
-        dir = self.getdir()
-
-        subprocess.run(['git', 'add', '.'], cwd=dir)
-        self._display_folder_walk(dir)
         
-    def git_add_certain(self):
+    def git_add(self):
         dir = self.getdir()
         
         self.treeview = ttk.Treeview(self)
 
         sel = self.right_tree.selection()  # selection is not empty한지 확인해주기 위한 코드 추가
+        
         if len(sel) == 0:
-            print("No file selected.")
-            return
+            answer = messagebox.askquestion("Confirmation", "Do you want to add all modified files?")
+            if answer == "yes":
+                subprocess.run(['git', 'add', '.'], cwd=dir)
+                self._display_folder_walk(dir)
+            else:
+                return
+        
         sel = sel[0]
         result = subprocess.run(['git', 'add', sel], cwd=dir)
         self._display_folder_walk(dir)
     
     def git_commit(self):
-        dir = self.history[len(self.history)-1]
+        dir = self.getdir()
 
         os.chdir(dir)
         msg = tk.simpledialog.askstring("commit", "Enter your commit message: ") #커밋메세지 작성
