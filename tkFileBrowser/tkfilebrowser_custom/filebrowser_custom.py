@@ -1517,21 +1517,23 @@ class FileBrowser(tk.Toplevel):
     def git_add(self):
         dir = self.getdir()
         
-        self.treeview = ttk.Treeview(self)
+        if os.path.exists(os.path.join(dir, ".git")):
+            sel = self.right_tree.selection()
+        
+            if len(sel) == 0:
+                answer = messagebox.askquestion("Confirmation", "Do you want to add all modified files?")
+                if answer == "yes":
+                    subprocess.run(['git', 'add', '.'], cwd=dir)
+                    self._display_folder_walk(dir)
+                else:
+                    return
+        
+            sel = sel[0]
+            subprocess.run(['git', 'add', sel], cwd=dir)
+            self._display_folder_walk(dir)
+        else:
+            print("fatal: not a git repository (or any of the parent directories): .git")
 
-        sel = self.right_tree.selection()  # selection is not empty한지 확인해주기 위한 코드 추가
-        
-        if len(sel) == 0:
-            answer = messagebox.askquestion("Confirmation", "Do you want to add all modified files?")
-            if answer == "yes":
-                subprocess.run(['git', 'add', '.'], cwd=dir)
-                self._display_folder_walk(dir)
-            else:
-                return
-        
-        sel = sel[0]
-        result = subprocess.run(['git', 'add', sel], cwd=dir)
-        self._display_folder_walk(dir)
     
     def git_commit(self):
         dir = self.getdir()
