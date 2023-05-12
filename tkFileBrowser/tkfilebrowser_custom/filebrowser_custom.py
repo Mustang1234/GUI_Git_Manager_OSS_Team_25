@@ -1536,31 +1536,37 @@ class FileBrowser(tk.Toplevel):
         result = subprocess.run(['git', 'add', sel], cwd=dir)
         self._display_folder_walk(dir)
     
-
     def git_commit(self):
-        dir = self.getdir()
-            
+        dir = self.history[len(self.history)-1]
+
         os.chdir(dir)
-        msg = tk.simpledialog.askstring("commit", "Enter your commit message: ") #Enter your commit message. You can change the message later.
+        msg = tk.simpledialog.askstring("commit", "Enter your commit message: ") #커밋메세지 작성
         
-        if msg:
+        if msg and msg.strip(): # 커밋 메세지 작성 후 "OK" 버튼이 눌렀을 때
             result = subprocess.run(['git', 'commit', '-m', msg], cwd=dir)
             self._display_folder_walk(dir)
-        else:
+        elif msg is not None: # "OK" 버튼이 눌렸을 때 메시지가 빈 문자열인 경우
             messagebox.showerror("Error", "Commit message cannot be empty.")
- 
-
+        elif msg is None: #"Cancel" 버튼 눌렀을 때
+            pass    
+        
+        self._display_folder_walk(dir)    
+            
     def git_restore(self): # modified -> unmodified (아직 add전 수정만 한 상태에서 최근 커밋 상태로 돌아가기 == 수정 취소)
         dir = self.getdir()
      
         file_tuple = self.right_tree.selection() #튜플형태
         
-        file_path = file_tuple[0] #클릭한 파일의 경로
-        split_string = file_path.split('\\')
-        file_name = split_string[-1] #경로의 마지막 부분이 file_name
-        
-        result = subprocess.run(['git', 'restore', file_name], cwd=dir)
-        self._display_folder_walk(dir)  
+        if len(file_tuple)>0:   # tuple이 empty한지 한번 더 체크
+            file_path = file_tuple[0] #클릭한 파일의 경로
+            split_string = file_path.split('\\')
+            file_name = split_string[-1] #경로의 마지막 부분이 file_name
+            
+            result = subprocess.run(['git', 'restore', file_name], cwd=dir)
+            self._display_folder_walk(dir)  
+        else:
+            messagebox.showerror("Error", "No file selected for restore.")
+            print("No file selected.")
     
     def git_restore_s(self): # staged -> modified (add 한 상태에서 add 전 수정만 한 상태로 돌아가기 == add 취소)
         dir = self.getdir()
@@ -1574,8 +1580,8 @@ class FileBrowser(tk.Toplevel):
             result = subprocess.run(['git', 'restore', '--staged', file_name], cwd=dir)
             self._display_folder_walk(dir)  
         else:
+            messagebox.showerror("Error", "No file selected for restore.")
             print("No file selected.")
-
 
     def git_rm(self): #committed -> staged
         dir = self.getdir()
