@@ -496,6 +496,8 @@ class FileBrowser(tk.Toplevel):
                    command=self.git_rm).pack(side="right", padx=4)
         ttk.Button(frame_buttons, text="git rm --cached",
                    command=self.git_rm_cached).pack(side="right")
+        ttk.Button(frame_buttons, text="git mv",
+                   command=self._git_rename_wrapper).pack(side="right", padx=4)
 
         # ---  key browsing entry
         self.key_browse_var = tk.StringVar(self)
@@ -1616,6 +1618,56 @@ class FileBrowser(tk.Toplevel):
         else:
             print("No file selected.")
     
+
+    def _get_git_directory(self):
+        try:
+            result = subprocess.run(["git", "rev-parse", "--show-toplevel"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            if result.returncode != 0:
+                raise Exception("Not a git repository")
+            return result.stdout.decode().strip()
+        except (FileNotFoundError, Exception):
+            messagebox.showerror("Error", "Could not find Git repository.")
+            
+
+
+    def _git_rename_wrapper(self):
+        git_directory = self._get_git_directory()
+        if git_directory:
+            self.git_rename()
+
+    def git_rename(self):
+        
+        selected = self.right_tree.selection()
+        
+        old_path = self.right_tree.item(selected[0])['values'][0]
+
+        # Ask for new file path
+        new_path = tk.filedialog.askdirectory(initialdir=os.path.dirname(old_path), title="Select New Directory")
+        if not new_path:
+            return
+
+        new_file_name = os.path.basename(old_path)
+        while True:
+            # Ask for new file name
+            new_file_name = tk.simpledialog.askstring("New file name", "Enter the new file name", initialvalue=new_file_name)
+            if not new_file_name:
+                return
+            new_file_path = os.path.join(new_path, new_file_name)
+
+            # Check if the new file path already exists
+            if os.path.exists(new_file_path):
+                if tk.messagebox.askyesno("File Already Exists", "File '{}' already exists. Do you want to overwrite it?".format(new_file_path)):
+                    break
+            else:
+                break
+
+        old_file_path = os.path.join(os.path.dirname(old_path), os.path.basename(old_path))
+
+        try:
+            result = subprocess.run(["git", "mv", old_file_path, new_file_path], cwd=self._get_git_directory(), check=True, shell=False, stderr=subprocess.PIPE)
+            self._display_folder_walk(self.getdir())
+        except subprocess.CalledProcessError as e:
+            print("Failed to rename file using git mv command. stderr:", e.stderr.decode())
 
     def quit(self):
         """Destroy dialog."""
