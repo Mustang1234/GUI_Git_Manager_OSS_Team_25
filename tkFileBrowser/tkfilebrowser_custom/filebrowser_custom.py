@@ -1732,8 +1732,7 @@ class FileBrowser(tk.Toplevel):
         old_path = self.click()[0]
         # Ask for new file path
 
-        new_path = "Dobby is free!!!"
-        while self._get_git_directory() not in new_path:
+        while True:
             new_path = tkfilebrowser.askopendirname(parent=self.parent)
 
             new_file_name = os.path.basename(old_path)
@@ -1750,8 +1749,13 @@ class FileBrowser(tk.Toplevel):
                         break
                 else:
                     break
-
+            
             new_path = new_path.replace("/","\\")
+            if self._get_git_directory() not in new_path:
+                messagebox.showerror("Not in git repository")
+            else:
+                break
+
 
         try:
             subprocess.run(["git", "mv", old_path, new_path], cwd=self._get_git_directory(), check=True, shell=False, stderr=subprocess.PIPE)
