@@ -726,7 +726,7 @@ class FileBrowser(tk.Toplevel):
 
     def click(self):
         sel = self.right_tree.selection()
-        if self.is_git_repo():
+        if ".git" in walk(self.getdir()).send(None)[1]:
             self.b_git_init.pack_forget()
             tags = self.right_tree.item(sel[0], "tags")
             if "modified" in tags:
@@ -741,7 +741,7 @@ class FileBrowser(tk.Toplevel):
                 self.b_git_commit.pack(side="right", padx=4)
             else:
                 self.b_git_mv.pack_forget()
-                self.b_git_restore_s.pack_forget()
+                self.b_git_restore_s.pack_forget()  
                 self.b_git_commit.pack_forget()
             if "committed" in tags:
                 self.b_git_rm.pack(side="right", padx=4)
