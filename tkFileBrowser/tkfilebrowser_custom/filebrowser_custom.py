@@ -298,7 +298,7 @@ class FileBrowser(tk.Toplevel):
                                        command=self.update_status)
         
         self.b_quit = ttk.Button(frame_buttons, text=cancelbuttontext,
-                                       command=self.quit).pack(side="left", padx=4)
+                                       command=self.quit).pack(side="right", padx=4)
         self.b_git_init = ttk.Button(frame_buttons, text="git init",
                                        command=self.git_init)
         self.b_git_add = ttk.Button(frame_buttons, text="git add",
