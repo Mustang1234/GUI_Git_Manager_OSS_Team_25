@@ -296,7 +296,7 @@ class FileBrowser(tk.Toplevel):
         self.b_quit = ttk.Button(frame_buttons, text=cancelbuttontext,
                                        command=self.quit).pack(side="right", padx=4)
         self.b_git_init = ttk.Button(frame_buttons, text="git init",
-                                       command=self.git_init).pack(side="right", padx=4)
+                                       command=self.git_init)
         self.b_git_add = ttk.Button(frame_buttons, text="git add",
                                        command=self.git_add)
         self.b_git_commit = ttk.Button(frame_buttons, text="git commit",
@@ -305,6 +305,8 @@ class FileBrowser(tk.Toplevel):
                                        command=self.git_restore)
         self.b_git_restore_s = ttk.Button(frame_buttons, text="git restore --staged",
                                        command=self.git_restore_s)
+        self.b_git_mv = ttk.Button(frame_buttons, text="git mv",
+                                       command=self.git_rename)
         self.b_git_rm = ttk.Button(frame_buttons, text="git rm",
                                        command=self.git_rm)
         self.b_git_rm_cached = ttk.Button(frame_buttons, text="git rm --cached",
@@ -724,38 +726,37 @@ class FileBrowser(tk.Toplevel):
 
     def click(self):
         sel = self.right_tree.selection()
-        tags = self.right_tree.item(sel[0], "tags")
-        if "untracked" in tags:
-            self.b_git_add.pack(side="right", padx=4)
+        if ".git" in walk(self.getdir()).send(None)[1]:
+            self.b_git_init.pack_forget()
+            tags = self.right_tree.item(sel[0], "tags")
+            if "modified" in tags:
+                self.b_git_add.pack(side="right", padx=4)
+                self.b_git_restore.pack(side="right", padx=4)
+            else:
+                self.b_git_add.pack_forget()
+                self.b_git_restore.pack_forget()
+            if "staged" in tags:
+                self.b_git_mv.pack(side="right", padx=4)
+                self.b_git_restore_s.pack(side="right", padx=4)
+                self.b_git_commit.pack(side="right", padx=4)
+            else:
+                self.b_git_mv.pack_forget()
+                self.b_git_restore_s.pack_forget()  
+                self.b_git_commit.pack_forget()
+            if "committed" in tags:
+                self.b_git_rm.pack(side="right", padx=4)
+                self.b_git_rm_cached.pack(side="right", padx=4)
+                self.b_git_rename_wrapper.pack(side="right", padx=4)
+            else:
+                self.b_git_rm.pack_forget()
+                self.b_git_rm_cached.pack_forget()
+                self.b_git_rename_wrapper.pack_forget()
+            if "untracked" in tags:
+                self.b_git_add.pack(side="right", padx=4)
+            else:
+                self.b_git_add.pack_forget()
         else:
-            self.b_git_add.pack_forget()
-        if "modified" in tags:
-            self.b_git_add.pack(side="right", padx=4)
-            self.b_git_restore.pack(side="right", padx=4)
-        else:
-            self.b_git_add.pack_forget()
-            self.b_git_restore.pack_forget()
-        if "staged" in tags:
-            self.b_git_restore_s.pack(side="right", padx=4)
-            self.b_git_commit.pack(side="right", padx=4)
-        else:
-            self.b_git_restore_s.pack_forget()
-            self.b_git_commit.pack_forget()
-        if "committed" in tags:
-            self.b_git_rm.pack(side="right", padx=4)
-            self.b_git_rm_cached.pack(side="right", padx=4)
-            self.b_git_rename_wrapper.pack(side="right", padx=4)
-        else:
-            self.b_git_rm.pack_forget()
-            self.b_git_rm_cached.pack_forget()
-            self.b_git_rename_wrapper.pack_forget()
-        """
-        untracked : add
-        modified : add, restored
-        staged : restore_s, commit
-        commit : rm_cached, rm, mv
-        """
-        
+            self.b_git_init.pack(side="right", padx=4)
         return sel
 
 
@@ -783,7 +784,7 @@ class FileBrowser(tk.Toplevel):
         filename,filedir=self.split_dir_name(fullname)
         if ".git" in filename:
             return "IT_IS_DOT_GIT"
-        if self.is_git_repo() and filename in subprocess.run(['git', 'ls-files', filename], cwd=filedir, capture_output=True).stdout.decode().strip():
+        if self.is_git_repo():
             try:
                 arg=subprocess.run(['git', 'status', filename], cwd=filedir, capture_output=True).stdout.decode().strip()
                 stages=["Untracked", "Changes not staged for commit", "Changes to be committed", "nothing to commit"]
@@ -792,6 +793,8 @@ class FileBrowser(tk.Toplevel):
                 for i in range(len(stages)):
                     if stages[i] in arg:
                         ret.append(stages_to_return[i])
+                        if i==0:
+                            break
                 return ret
             except StopIteration:
                 self._display_folder_listdir(dir)
@@ -1618,6 +1621,7 @@ class FileBrowser(tk.Toplevel):
         else:
             return
             
+                        
     def git_restore(self): # modified -> unmodified (���� add�� ������ �� ���¿��� �ֱ� Ŀ�� ���·� ���ư��� == ���� ���)
         file_tuple = self.click() #Ʃ������
         
@@ -1672,13 +1676,11 @@ class FileBrowser(tk.Toplevel):
     
     
     def _get_git_directory(self):
-        try:
-            result = subprocess.run(["git", "rev-parse", "--show-toplevel"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            if result.returncode != 0:
-                raise Exception("Not a git repository")
-            return result.stdout.decode().strip()
-        except (FileNotFoundError, Exception):
-            messagebox.showerror("Error", "Could not find Git repository.")
+        """Returns the path to the .git directory."""
+        for dir in self.history:
+            if ".git" in walk(dir).send(None)[1]:
+                return dir
+        return None
             
 
 
@@ -1690,9 +1692,7 @@ class FileBrowser(tk.Toplevel):
     def git_rename(self):
         
         selected = self.click()
-        
-        old_path = self.right_tree.item(selected[0])['values'][0]
-
+        old_path = selected[0]
         # Ask for new file path
         new_path = tk.filedialog.askdirectory(initialdir=os.path.dirname(old_path), title="Select New Directory")
         if not new_path:
@@ -1704,19 +1704,19 @@ class FileBrowser(tk.Toplevel):
             new_file_name = tk.simpledialog.askstring("New file name", "Enter the new file name", initialvalue=new_file_name)
             if not new_file_name:
                 return
-            new_file_path = os.path.join(new_path, new_file_name)
+            new_path = os.path.join(new_path, new_file_name)
 
             # Check if the new file path already exists
-            if os.path.exists(new_file_path):
-                if tk.messagebox.askyesno("File Already Exists", "File '{}' already exists. Do you want to overwrite it?".format(new_file_path)):
+            if os.path.exists(new_path):
+                if tk.messagebox.askyesno("File Already Exists", "File '{}' already exists. Do you want to overwrite it?".format(new_path)):
                     break
             else:
                 break
 
-        old_file_path = os.path.join(os.path.dirname(old_path), os.path.basename(old_path))
+        new_path = new_path.replace("/","\\")
 
         try:
-            result = subprocess.run(["git", "mv", old_file_path, new_file_path], cwd=self._get_git_directory(), check=True, shell=False, stderr=subprocess.PIPE)
+            subprocess.run(["git", "mv", old_path, new_path], cwd=self._get_git_directory(), check=True, shell=False, stderr=subprocess.PIPE)
             self._display_folder_walk(self.getdir())
         except subprocess.CalledProcessError as e:
             print("Failed to rename file using git mv command. stderr:", e.stderr.decode())
