@@ -298,7 +298,7 @@ class FileBrowser(tk.Toplevel):
                                        command=self.update_status)
         
         self.b_quit = ttk.Button(frame_buttons, text=cancelbuttontext,
-                                       command=self.quit).pack(side="right", padx=4)
+                                       command=self.quit).pack(side="left", padx=4)
         self.b_git_init = ttk.Button(frame_buttons, text="git init",
                                        command=self.git_init)
         self.b_git_add = ttk.Button(frame_buttons, text="git add",
@@ -734,25 +734,25 @@ class FileBrowser(tk.Toplevel):
             tags = self.right_tree.item(sel[0], "tags")
             if ".git" not in walk(self.getdir()).send(None)[1]:
                 self.clear_buttons()
-                self.b_git_init.pack(side="right", padx=4)
+                self.b_git_init.pack(side="left", padx=4)
             if "modified" in tags:
                 self.clear_buttons()
-                self.b_git_add.pack(side="right", padx=4)
-                self.b_git_restore.pack(side="right", padx=4)
+                self.b_git_add.pack(side="left", padx=4)
+                self.b_git_restore.pack(side="left", padx=4)
             if "staged" in tags:
                 self.clear_buttons()
-                self.b_git_rm_cached.pack(side="right", padx=4)
-                self.b_git_restore_s.pack(side="right", padx=4)
-                self.b_git_commit.pack(side="right", padx=4)
-                self.b_git_mv.pack(side="right", padx=4)
+                self.b_git_rm_cached.pack(side="left", padx=4)
+                self.b_git_restore_s.pack(side="left", padx=4)
+                self.b_git_commit.pack(side="left", padx=4)
+                self.b_git_mv.pack(side="left", padx=4)
             if "committed" in tags:
                 self.clear_buttons()
-                self.b_git_rm.pack(side="right", padx=4)
-                self.b_git_rm_cached.pack(side="right", padx=4)
-                self.b_git_rename_wrapper.pack(side="right", padx=4)
+                self.b_git_rm.pack(side="left", padx=4)
+                self.b_git_rm_cached.pack(side="left", padx=4)
+                self.b_git_rename_wrapper.pack(side="left", padx=4)
             if "untracked" in tags:
                 self.clear_buttons()
-                self.b_git_add.pack(side="right", padx=4)
+                self.b_git_add.pack(side="left", padx=4)
         return sel
 
     def clear_buttons(self):
@@ -768,13 +768,13 @@ class FileBrowser(tk.Toplevel):
 
     def init_need(self,dir):
         if ".git" not in walk(dir).send(None)[1]:
-            self.b_git_init.pack(side="right", padx=4)
+            self.b_git_init.pack(side="left", padx=4)
         else:
             self.b_git_init.pack_forget()
 
     def init_need_num(self,num):
         if num == 0:
-            self.b_git_init.pack(side="right", padx=4)
+            self.b_git_init.pack(side="left", padx=4)
         else:
             self.b_git_init.pack_forget()
 
@@ -1240,7 +1240,7 @@ class FileBrowser(tk.Toplevel):
                     
                     gits=self.getstatus(p)
                     if "untracked" in gits or "modified" in gits:
-                        self.b_git_add.pack(side="right", padx=4)
+                        self.b_git_add.pack(side="left", padx=4)
                     if gits != "NOT_IN_GIT_DIR":
                         for g in gits:
                             tags = tags + (g, )
@@ -1266,7 +1266,7 @@ class FileBrowser(tk.Toplevel):
                     
                 gits=self.getstatus(p)
                 if "untracked" in gits or "modified" in gits:
-                    self.b_git_add.pack(side="right", padx=4)
+                    self.b_git_add.pack(side="left", padx=4)
                 if gits == "IT_IS_DOT_GIT":
                     self.right_tree.insert("", "end", p, text=f, tags=tags,
                                            values=("", "", get_modification_date(p)))
@@ -1362,7 +1362,7 @@ class FileBrowser(tk.Toplevel):
                 gits=self.getstatus(p)
                 self.init_need(self.getdir())
                 if "untracked" in gits or "modified" in gits:
-                    self.b_git_add.pack(side="right", padx=4)
+                    self.b_git_add.pack(side="left", padx=4)
                 if gits == "IT_IS_DOT_GIT":
                     self.right_tree.insert("", "end", p, text=d, tags=tags,
                                            values=("", "", get_modification_date(p)))
@@ -1401,7 +1401,7 @@ class FileBrowser(tk.Toplevel):
                     gits=self.getstatus(p)
                     self.init_need(self.getdir())
                     if "untracked" in gits or "modified" in gits:
-                        self.b_git_add.pack(side="right", padx=4)
+                        self.b_git_add.pack(side="left", padx=4)
                     if gits != "NOT_IN_GIT_DIR":
                         for g in gits:
                             tags = tags + (g, )
@@ -1499,7 +1499,7 @@ class FileBrowser(tk.Toplevel):
                 gits=self.getstatus(folder+"\\"+name)
                 self.init_need(self.getdir())
                 if "untracked" in gits or "modified" in gits:
-                    self.b_git_add.pack(side="right", padx=4)
+                    self.b_git_add.pack(side="left", padx=4)
                 if gits == "IT_IS_DOT_GIT":
                     self.right_tree.insert("", "end", f.path, text=name, tags=tags,
                                            values=("", "",
@@ -1731,24 +1731,27 @@ class FileBrowser(tk.Toplevel):
     def git_rename(self):
         old_path = self.click()[0]
         # Ask for new file path
-        new_path = tkfilebrowser.askopendirname(parent=self.parent)
 
-        new_file_name = os.path.basename(old_path)
-        while True:
-            # Ask for new file name
-            new_file_name = tk.simpledialog.askstring("New file name", "Enter the new file name", initialvalue=new_file_name)
-            if not new_file_name:
-                return
-            new_path = os.path.join(new_path, new_file_name)
+        new_path = "Dobby is free!!!"
+        while self._get_git_directory() not in new_path:
+            new_path = tkfilebrowser.askopendirname(parent=self.parent)
 
-            # Check if the new file path already exists
-            if os.path.exists(new_path):
-                if tk.messagebox.askyesno("File Already Exists", "File '{}' already exists. Do you want to overwrite it?".format(new_path)):
+            new_file_name = os.path.basename(old_path)
+            while True:
+                # Ask for new file name
+                new_file_name = tk.simpledialog.askstring("New file name", "Enter the new file name", initialvalue=new_file_name)
+                if not new_file_name:
+                    return
+                new_path = os.path.join(new_path, new_file_name)
+
+                # Check if the new file path already exists
+                if os.path.exists(new_path):
+                    if tk.messagebox.askyesno("File Already Exists", "File '{}' already exists. Do you want to overwrite it?".format(new_path)):
+                        break
+                else:
                     break
-            else:
-                break
 
-        new_path = new_path.replace("/","\\")
+            new_path = new_path.replace("/","\\")
 
         try:
             subprocess.run(["git", "mv", old_path, new_path], cwd=self._get_git_directory(), check=True, shell=False, stderr=subprocess.PIPE)
