@@ -1225,7 +1225,7 @@ class FileBrowser(tk.Toplevel):
                         tags = tags + ("file",)
                     
                     gits=self.getstatus(p)
-                    if "untracked" in gits:
+                    if "untracked" in gits or "modified" in gits:
                         self.b_git_add.pack(side="right", padx=4)
                     if gits != "NOT_IN_GIT_DIR":
                         for g in gits:
@@ -1251,7 +1251,7 @@ class FileBrowser(tk.Toplevel):
                     tags = tags + ("folder",)
                     
                 gits=self.getstatus(p)
-                if "untracked" in gits:
+                if "untracked" in gits or "modified" in gits:
                     self.b_git_add.pack(side="right", padx=4)
                 if gits == "IT_IS_DOT_GIT":
                     self.right_tree.insert("", "end", p, text=f, tags=tags,
@@ -1345,7 +1345,7 @@ class FileBrowser(tk.Toplevel):
                     i += 1
                 
                 gits=self.getstatus(p)
-                if "untracked" in gits:
+                if "untracked" in gits or "modified" in gits:
                     self.b_git_add.pack(side="right", padx=4)
                 if gits == "IT_IS_DOT_GIT":
                     self.right_tree.insert("", "end", p, text=d, tags=tags,
@@ -1383,7 +1383,7 @@ class FileBrowser(tk.Toplevel):
                         i += 1
 
                     gits=self.getstatus(p)
-                    if "untracked" in gits:
+                    if "untracked" in gits or "modified" in gits:
                         self.b_git_add.pack(side="right", padx=4)
                     if gits != "NOT_IN_GIT_DIR":
                         for g in gits:
@@ -1479,7 +1479,7 @@ class FileBrowser(tk.Toplevel):
                     i += 1
 
                 gits=self.getstatus(folder+"\\"+name)
-                if "untracked" in gits:
+                if "untracked" in gits or "modified" in gits:
                     self.b_git_add.pack(side="right", padx=4)
                 if gits == "IT_IS_DOT_GIT":
                     self.right_tree.insert("", "end", f.path, text=name, tags=tags,
