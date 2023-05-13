@@ -296,7 +296,7 @@ class FileBrowser(tk.Toplevel):
         self.b_quit = ttk.Button(frame_buttons, text=cancelbuttontext,
                                        command=self.quit).pack(side="right", padx=4)
         self.b_git_init = ttk.Button(frame_buttons, text="git init",
-                                       command=self.git_init).pack(side="right", padx=4)
+                                       command=self.git_init)
         self.b_git_add = ttk.Button(frame_buttons, text="git add",
                                        command=self.git_add)
         self.b_git_commit = ttk.Button(frame_buttons, text="git commit",
@@ -305,6 +305,8 @@ class FileBrowser(tk.Toplevel):
                                        command=self.git_restore)
         self.b_git_restore_s = ttk.Button(frame_buttons, text="git restore --staged",
                                        command=self.git_restore_s)
+        self.b_git_mv = ttk.Button(frame_buttons, text="git mv",
+                                       command=self.git_rename)
         self.b_git_rm = ttk.Button(frame_buttons, text="git rm",
                                        command=self.git_rm)
         self.b_git_rm_cached = ttk.Button(frame_buttons, text="git rm --cached",
@@ -724,38 +726,37 @@ class FileBrowser(tk.Toplevel):
 
     def click(self):
         sel = self.right_tree.selection()
-        tags = self.right_tree.item(sel[0], "tags")
-        if "untracked" in tags:
-            self.b_git_add.pack(side="right", padx=4)
+        if self.is_git_repo():
+            self.b_git_init.pack_forget()
+            tags = self.right_tree.item(sel[0], "tags")
+            if "modified" in tags:
+                self.b_git_add.pack(side="right", padx=4)
+                self.b_git_restore.pack(side="right", padx=4)
+            else:
+                self.b_git_add.pack_forget()
+                self.b_git_restore.pack_forget()
+            if "staged" in tags:
+                self.b_git_mv.pack(side="right", padx=4)
+                self.b_git_restore_s.pack(side="right", padx=4)
+                self.b_git_commit.pack(side="right", padx=4)
+            else:
+                self.b_git_mv.pack_forget()
+                self.b_git_restore_s.pack_forget()
+                self.b_git_commit.pack_forget()
+            if "committed" in tags:
+                self.b_git_rm.pack(side="right", padx=4)
+                self.b_git_rm_cached.pack(side="right", padx=4)
+                self.b_git_rename_wrapper.pack(side="right", padx=4)
+            else:
+                self.b_git_rm.pack_forget()
+                self.b_git_rm_cached.pack_forget()
+                self.b_git_rename_wrapper.pack_forget()
+            if "untracked" in tags:
+                self.b_git_add.pack(side="right", padx=4)
+            else:
+                self.b_git_add.pack_forget()
         else:
-            self.b_git_add.pack_forget()
-        if "modified" in tags:
-            self.b_git_add.pack(side="right", padx=4)
-            self.b_git_restore.pack(side="right", padx=4)
-        else:
-            self.b_git_add.pack_forget()
-            self.b_git_restore.pack_forget()
-        if "staged" in tags:
-            self.b_git_restore_s.pack(side="right", padx=4)
-            self.b_git_commit.pack(side="right", padx=4)
-        else:
-            self.b_git_restore_s.pack_forget()
-            self.b_git_commit.pack_forget()
-        if "committed" in tags:
-            self.b_git_rm.pack(side="right", padx=4)
-            self.b_git_rm_cached.pack(side="right", padx=4)
-            self.b_git_rename_wrapper.pack(side="right", padx=4)
-        else:
-            self.b_git_rm.pack_forget()
-            self.b_git_rm_cached.pack_forget()
-            self.b_git_rename_wrapper.pack_forget()
-        """
-        untracked : add
-        modified : add, restored
-        staged : restore_s, commit
-        commit : rm_cached, rm, mv
-        """
-        
+            self.b_git_init.pack(side="right", padx=4)
         return sel
 
 
@@ -783,7 +784,7 @@ class FileBrowser(tk.Toplevel):
         filename,filedir=self.split_dir_name(fullname)
         if ".git" in filename:
             return "IT_IS_DOT_GIT"
-        if self.is_git_repo() and filename in subprocess.run(['git', 'ls-files', filename], cwd=filedir, capture_output=True).stdout.decode().strip():
+        if self.is_git_repo():
             try:
                 arg=subprocess.run(['git', 'status', filename], cwd=filedir, capture_output=True).stdout.decode().strip()
                 stages=["Untracked", "Changes not staged for commit", "Changes to be committed", "nothing to commit"]
@@ -792,6 +793,8 @@ class FileBrowser(tk.Toplevel):
                 for i in range(len(stages)):
                     if stages[i] in arg:
                         ret.append(stages_to_return[i])
+                        if i==0:
+                            break
                 return ret
             except StopIteration:
                 self._display_folder_listdir(dir)
@@ -1594,20 +1597,31 @@ class FileBrowser(tk.Toplevel):
     
     def git_commit(self):
         dir = self.getdir()
-
-        #############os.chdir(dir)############
-        msg = tk.simpledialog.askstring("commit", "Enter your commit message: ") #Ŀ�Ը޼��� �ۼ�
+        staged_list = []
+      
+        staged_search = ['git', 'diff', '--name-only', '--cached'] # "Changes to be committed" 상태의 파일을 이름만 출력해주는 명령어
+        result = subprocess.run(staged_search, stdout=subprocess.PIPE, text=True, cwd=dir) #stdout에 출력값 저장
         
-        if msg and msg.strip(): # Ŀ�� �޼��� �ۼ� �� "OK" ��ư�� ������ ��
-            subprocess.run(['git', 'commit', '-m', msg], cwd=dir)
-            self.update_status()
-        elif msg is not None: # "OK" ��ư�� ������ �� �޽����� �� ���ڿ��� ���
-            messagebox.showerror("Error", "Commit message cannot be empty.")
-        elif msg is None: #"Cancel" ��ư ������ ��
-            pass    
+        output_lines = result.stdout.strip().split('\n') #파일이름을 하나씩 staged_list에 저장
+        for line in output_lines:
+            staged_list.append(line)
         
-        self.update_status()
+        message = "Do you want to commit this staged files?\n\n[ Staged changes ] :\n" + "\n".join(staged_list)
+        is_ok_commit = messagebox.askquestion("Staged file list to commit", message)
+        if is_ok_commit == 'yes':
+            msg = tk.simpledialog.askstring("commit", "Enter your commit message: ") #커밋메세지 작성
+        
+            if msg and msg.strip(): # 커밋 메세지 작성 후 "OK" 버튼이 눌렀을 때
+                subprocess.run(['git', 'commit', '-m', msg], cwd=dir)
+                self.update_status()
+            elif msg is not None: # "OK" 버튼이 눌렸을 때 메시지가 빈 문자열인 경우
+                messagebox.showerror("Error", "Commit message cannot be empty.")
+            elif msg is None: #"Cancel" 버튼 눌렀을 때
+                pass    
+        else:
+            return
             
+                        
     def git_restore(self): # modified -> unmodified (���� add�� ������ �� ���¿��� �ֱ� Ŀ�� ���·� ���ư��� == ���� ���)
         file_tuple = self.click() #Ʃ������
         
