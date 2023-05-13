@@ -23,6 +23,7 @@ import os
 import tkinter as tk
 from tkinter import messagebox
 import subprocess
+import tkfilebrowser
 
 
 import psutil
@@ -46,6 +47,8 @@ from autoscrollbar_custom import AutoScrollbar
 from path_button_custom import PathButton
 from tooltip_custom import TooltipTreeWrapper
 from recent_files_custom import RecentFiles
+
+
 
 if OSNAME == 'nt':
     from win32com.shell import shell, shellcon
@@ -726,39 +729,41 @@ class FileBrowser(tk.Toplevel):
 
     def click(self):
         sel = self.right_tree.selection()
-        if ".git" in walk(self.getdir()).send(None)[1]:
-            self.b_git_init.pack_forget()
+        if len(sel) > 0 and self.is_git_repo():
             tags = self.right_tree.item(sel[0], "tags")
+            if ".git" not in walk(self.getdir()).send(None)[1]:
+                self.clear_buttons()
+                self.b_git_init.pack(side="right", padx=4)
             if "modified" in tags:
+                self.clear_buttons()
                 self.b_git_add.pack(side="right", padx=4)
                 self.b_git_restore.pack(side="right", padx=4)
-            else:
-                self.b_git_add.pack_forget()
-                self.b_git_restore.pack_forget()
             if "staged" in tags:
-                self.b_git_mv.pack(side="right", padx=4)
+                self.clear_buttons()
+                self.b_git_rm_cached.pack(side="right", padx=4)
                 self.b_git_restore_s.pack(side="right", padx=4)
                 self.b_git_commit.pack(side="right", padx=4)
-            else:
-                self.b_git_mv.pack_forget()
-                self.b_git_restore_s.pack_forget()  
-                self.b_git_commit.pack_forget()
+                self.b_git_mv.pack(side="right", padx=4)
             if "committed" in tags:
+                self.clear_buttons()
                 self.b_git_rm.pack(side="right", padx=4)
                 self.b_git_rm_cached.pack(side="right", padx=4)
                 self.b_git_rename_wrapper.pack(side="right", padx=4)
-            else:
-                self.b_git_rm.pack_forget()
-                self.b_git_rm_cached.pack_forget()
-                self.b_git_rename_wrapper.pack_forget()
             if "untracked" in tags:
+                self.clear_buttons()
                 self.b_git_add.pack(side="right", padx=4)
-            else:
-                self.b_git_add.pack_forget()
-        else:
-            self.b_git_init.pack(side="right", padx=4)
         return sel
 
+    def clear_buttons(self):
+        self.b_git_init.pack_forget()
+        self.b_git_add.pack_forget()
+        self.b_git_restore.pack_forget()
+        self.b_git_mv.pack_forget()
+        self.b_git_restore_s.pack_forget()  
+        self.b_git_commit.pack_forget()
+        self.b_git_rm.pack_forget()
+        self.b_git_rm_cached.pack_forget()
+        self.b_git_rename_wrapper.pack_forget()
 
     def update_status(self):
         self._display_folder_walk(self.getdir())
@@ -805,7 +810,7 @@ class FileBrowser(tk.Toplevel):
                 
 
     def getstatus_for_sort(self, fullname):
-        return self.getstatus(fullname)[0]
+        return " & ".join(_ for _ in self.getstatus(fullname))
         
     def _sort_by_status(self, reverse):
         """Sort files and folders by stage."""
@@ -1159,6 +1164,7 @@ class FileBrowser(tk.Toplevel):
             * reset (boolean): forget all the part of the history right of self._hist_index
             * update_bar (boolean): update the buttons in path bar
         """
+        self.clear_buttons()
         # remove trailing / if any
         folder = abspath(folder)
         # reorganize display if previous was 'recent'
@@ -1218,6 +1224,8 @@ class FileBrowser(tk.Toplevel):
                         tags = tags + ("file",)
                     
                     gits=self.getstatus(p)
+                    if "untracked" in gits:
+                        self.b_git_add.pack(side="right", padx=4)
                     if gits != "NOT_IN_GIT_DIR":
                         for g in gits:
                             tags = tags + (g, )
@@ -1228,13 +1236,13 @@ class FileBrowser(tk.Toplevel):
                         stats = stat(p)
                     except OSError:
                         self.right_tree.insert("", "end", p, text=f, tags=tags,
-                                               values=("", "??", "??", ", ".join(_ for _ in gits)))
+                                               values=("", "??", "??", " & ".join(_ for _ in gits)))
                     else:
                         self.right_tree.insert("", "end", p, text=f, tags=tags,
                                                values=("",
                                                        display_size(stats.st_size),
                                                        display_modification_date(stats.st_mtime),
-                                                       ", ".join(_ for _ in gits)))
+                                                       " & ".join(_ for _ in gits)))
             elif isdir(p):
                 if islink(p):
                     tags = tags + ("folder_link",)
@@ -1242,6 +1250,8 @@ class FileBrowser(tk.Toplevel):
                     tags = tags + ("folder",)
                     
                 gits=self.getstatus(p)
+                if "untracked" in gits:
+                    self.b_git_add.pack(side="right", padx=4)
                 if gits == "IT_IS_DOT_GIT":
                     self.right_tree.insert("", "end", p, text=f, tags=tags,
                                            values=("", "", get_modification_date(p)))
@@ -1252,7 +1262,7 @@ class FileBrowser(tk.Toplevel):
                     else:
                         gits=""
                     self.right_tree.insert("", "end", p, text=f, tags=tags,
-                                           values=("", "", get_modification_date(p), ", ".join(_ for _ in gits)))
+                                           values=("", "", get_modification_date(p), " & ".join(_ for _ in gits)))
             else:  # broken link
                 tags = tags + ("link_broken",)
                 self.right_tree.insert("", "end", p, text=f, tags=tags,
@@ -1274,6 +1284,7 @@ class FileBrowser(tk.Toplevel):
             * reset (boolean): forget all the part of the history right of self._hist_index
             * update_bar (boolean): update the buttons in path bar
         """
+        self.clear_buttons()
         # remove trailing / if any
         folder = abspath(folder)
         # reorganize display if previous was 'recent'
@@ -1333,6 +1344,8 @@ class FileBrowser(tk.Toplevel):
                     i += 1
                 
                 gits=self.getstatus(p)
+                if "untracked" in gits:
+                    self.b_git_add.pack(side="right", padx=4)
                 if gits == "IT_IS_DOT_GIT":
                     self.right_tree.insert("", "end", p, text=d, tags=tags,
                                            values=("", "", get_modification_date(p)))
@@ -1343,7 +1356,7 @@ class FileBrowser(tk.Toplevel):
                     else:
                         gits=""
                     self.right_tree.insert("", "end", p, text=d, tags=tags,
-                                           values=("", "", get_modification_date(p), ", ".join(_ for _ in gits)))
+                                           values=("", "", get_modification_date(p), " & ".join(_ for _ in gits)))
             # display files
             files.sort(key=lambda n: n.lower())
             extension = self.filetypes[self.filetype.get()]
@@ -1369,6 +1382,8 @@ class FileBrowser(tk.Toplevel):
                         i += 1
 
                     gits=self.getstatus(p)
+                    if "untracked" in gits:
+                        self.b_git_add.pack(side="right", padx=4)
                     if gits != "NOT_IN_GIT_DIR":
                         for g in gits:
                             tags = tags + (g, )
@@ -1379,7 +1394,7 @@ class FileBrowser(tk.Toplevel):
                                            values=("",
                                                    display_size(stats.st_size),
                                                    display_modification_date(stats.st_mtime),
-                                                   ", ".join(_ for _ in gits)))
+                                                   " & ".join(_ for _ in gits)))
             items = self.right_tree.get_children("")
             if items:
                 self.right_tree.focus_set()
@@ -1400,6 +1415,7 @@ class FileBrowser(tk.Toplevel):
             * reset (boolean): forget all the part of the history right of self._hist_index
             * update_bar (boolean): update the buttons in path bar
         """
+        self.clear_buttons()
         # remove trailing / if any
         folder = abspath(folder)
         # reorganize display if previous was 'recent'
@@ -1462,6 +1478,8 @@ class FileBrowser(tk.Toplevel):
                     i += 1
 
                 gits=self.getstatus(folder+"\\"+name)
+                if "untracked" in gits:
+                    self.b_git_add.pack(side="right", padx=4)
                 if gits == "IT_IS_DOT_GIT":
                     self.right_tree.insert("", "end", f.path, text=name, tags=tags,
                                            values=("", "",
@@ -1479,12 +1497,12 @@ class FileBrowser(tk.Toplevel):
                                                    values=("",
                                                            display_size(stats.st_size),
                                                            display_modification_date(stats.st_mtime),
-                                                           ", ".join(_ for _ in gits)))
+                                                           " & ".join(_ for _ in gits)))
                     else:
                         self.right_tree.insert("", "end", f.path, text=name, tags=tags,
                                                values=("", "",
                                                        display_modification_date(stats.st_mtime),
-                                                       ", ".join(_ for _ in gits)))
+                                                       " & ".join(_ for _ in gits)))
             items = self.right_tree.get_children("")
             if items:
                 self.right_tree.focus_set()
@@ -1587,8 +1605,8 @@ class FileBrowser(tk.Toplevel):
                 else:
                     return
         
-            for _ in sel:
-                subprocess.run(['git', 'add', _], cwd=dir)
+            for fnf in sel:
+                subprocess.run(['git', 'add', fnf], cwd=dir)
                 self.update_status()
 
         else:
@@ -1685,16 +1703,19 @@ class FileBrowser(tk.Toplevel):
 
 
     def _git_rename_wrapper(self):
-        git_directory = self._get_git_directory()
-        if git_directory:
+        if self._get_git_directory():
             self.git_rename()
 
     def git_rename(self):
-        
-        selected = self.click()
-        old_path = selected[0]
+        old_path = self.click()[0]
         # Ask for new file path
-        new_path = tk.filedialog.askdirectory(initialdir=os.path.dirname(old_path), title="Select New Directory")
+        new_path = tkfilebrowser.askopendirname(parent=self.split_dir_name(self.getdir())[1])
+
+
+        """tk.filedialog.askdirectory(
+            initialdir=filedialog
+            os.path.dirname(old_path), title="Select New Directory"
+            )"""
         if not new_path:
             return
 
