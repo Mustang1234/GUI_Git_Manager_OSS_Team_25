@@ -1594,19 +1594,29 @@ class FileBrowser(tk.Toplevel):
     
     def git_commit(self):
         dir = self.getdir()
-
-        #############os.chdir(dir)############
-        msg = tk.simpledialog.askstring("commit", "Enter your commit message: ") #Ŀ�Ը޼��� �ۼ�
+        staged_list = []
+      
+        staged_search = ['git', 'diff', '--name-only', '--cached'] # "Changes to be committed" 상태의 파일을 이름만 출력해주는 명령어
+        result = subprocess.run(staged_search, stdout=subprocess.PIPE, text=True, cwd=dir) #stdout에 출력값 저장
         
-        if msg and msg.strip(): # Ŀ�� �޼��� �ۼ� �� "OK" ��ư�� ������ ��
-            subprocess.run(['git', 'commit', '-m', msg], cwd=dir)
-            self.update_status()
-        elif msg is not None: # "OK" ��ư�� ������ �� �޽����� �� ���ڿ��� ���
-            messagebox.showerror("Error", "Commit message cannot be empty.")
-        elif msg is None: #"Cancel" ��ư ������ ��
-            pass    
+        output_lines = result.stdout.strip().split('\n') #파일이름을 하나씩 staged_list에 저장
+        for line in output_lines:
+            staged_list.append(line)
         
-        self.update_status()
+        message = "Do you want to commit this staged files?\n\n[ Staged changes ] :\n" + "\n".join(staged_list)
+        is_ok_commit = messagebox.askquestion("Staged file list to commit", message)
+        if is_ok_commit == 'yes':
+            msg = tk.simpledialog.askstring("commit", "Enter your commit message: ") #커밋메세지 작성
+        
+            if msg and msg.strip(): # 커밋 메세지 작성 후 "OK" 버튼이 눌렀을 때
+                subprocess.run(['git', 'commit', '-m', msg], cwd=dir)
+                self.update_status()
+            elif msg is not None: # "OK" 버튼이 눌렸을 때 메시지가 빈 문자열인 경우
+                messagebox.showerror("Error", "Commit message cannot be empty.")
+            elif msg is None: #"Cancel" 버튼 눌렀을 때
+                pass    
+        else:
+            return
             
     def git_restore(self): # modified -> unmodified (���� add�� ������ �� ���¿��� �ֱ� Ŀ�� ���·� ���ư��� == ���� ���)
         file_tuple = self.click() #Ʃ������
