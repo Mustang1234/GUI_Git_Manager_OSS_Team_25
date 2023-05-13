@@ -20,11 +20,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 Main class
 """
 import os
-import random
 import tkinter as tk
-from tkinter import filedialog
 from tkinter import messagebox
-from tkinter import simpledialog
 import subprocess
 
 
@@ -146,6 +143,14 @@ class FileBrowser(tk.Toplevel):
         self.mode = mode
         self.result = ""
         self.foldercreation = foldercreation
+
+        self.git_addcreation = False
+        self.git_commitcreation = False
+        self.git_restorecreation = False
+        self.git_restore_screation = False
+        self.git_rmcreation = False
+        self.git_rm_cachedcreation = False
+        self._git_rename_wrappercreation = False
 
         # hidden files/folders visibility
         self.hide = False
@@ -281,12 +286,35 @@ class FileBrowser(tk.Toplevel):
         self.path_bar = ttk.Frame(frame_bar)
         self.path_bar.grid(row=0, column=0, sticky="ew")
         self.path_bar_buttons = []
+        frame_buttons = ttk.Frame(self)
+        frame_buttons.grid(row=4, sticky="ew", pady=10, padx=10)
         self.b_new_folder = ttk.Button(frame_bar, image=self.im_new,
                                        command=self.create_folder)
         self.b_update_status = ttk.Button(frame_bar, image=self.git_status_update,
                                        command=self.update_status)
+        
+        self.b_quit = ttk.Button(frame_buttons, text=cancelbuttontext,
+                                       command=self.quit).pack(side="right", padx=4)
+        self.b_git_init = ttk.Button(frame_buttons, text="git init",
+                                       command=self.git_init).pack(side="right", padx=4)
+        self.b_git_add = ttk.Button(frame_buttons, text="git add",
+                                       command=self.git_add)
+        self.b_git_commit = ttk.Button(frame_buttons, text="git commit",
+                                       command=self.git_commit)
+        self.b_git_restore = ttk.Button(frame_buttons, text="git restore",
+                                       command=self.git_restore)
+        self.b_git_restore_s = ttk.Button(frame_buttons, text="git restore --staged",
+                                       command=self.git_restore_s)
+        self.b_git_rm = ttk.Button(frame_buttons, text="git rm",
+                                       command=self.git_rm)
+        self.b_git_rm_cached = ttk.Button(frame_buttons, text="git rm --cached",
+                                       command=self.git_rm_cached)
+        self.b_git_rename_wrapper = ttk.Button(frame_buttons, text="git mv",
+                                       command=self._git_rename_wrapper)
+        
         if self.foldercreation:
             self.b_new_folder.grid(row=0, column=2, sticky="e")
+
         self.b_update_status.grid(row=0, column=1, sticky="e")
         if mode == "save":
             ttk.Label(self.path_bar, text=_("Folder: ")).grid(row=0, column=0)
@@ -449,12 +477,10 @@ class FileBrowser(tk.Toplevel):
         self.right_tree.tag_configure("folder_link", image=self.im_folder_link)
         self.right_tree.tag_configure("file_link", image=self.im_file_link)
         self.right_tree.tag_configure("link_broken", image=self.im_link_broken)
-        self.right_tree.tag_configure("git_unmodified", foreground="#00A000")
-        self.right_tree.tag_configure("git_modified", foreground="#0000A0")
-        self.right_tree.tag_configure("git_added", foreground="#00A0A0")
-        self.right_tree.tag_configure("git_deleted", foreground="#A00000")
-        self.right_tree.tag_configure("git_renamed", foreground="#A000A0")
-        self.right_tree.tag_configure("git_copied", foreground="#A05000")
+        self.right_tree.tag_configure("modified", foreground="#00A000")
+        self.right_tree.tag_configure("committed", foreground="#0000A0")
+        self.right_tree.tag_configure("staged", foreground="#00A0A0")
+        self.right_tree.tag_configure("untracked", foreground="#A00000")
 
         if mode == "opendir":
             self.right_tree.tag_configure("file", foreground="gray")
@@ -471,34 +497,12 @@ class FileBrowser(tk.Toplevel):
                                   xscrollcommand=self._scroll_h.set)
 
         # ---  buttons
-        frame_buttons = ttk.Frame(self)
-        frame_buttons.grid(row=4, sticky="ew", pady=10, padx=10)
         if okbuttontext is None:
             if mode == "save":
                 okbuttontext = _("Save")
             else:
                 okbuttontext = _("Open")
-        ttk.Button(frame_buttons, text=okbuttontext,
-                   command=self.validate).pack(side="right")
-        ttk.Button(frame_buttons, text=cancelbuttontext,
-                   command=self.quit).pack(side="right", padx=4)
-        ttk.Button(frame_buttons, text="git init",
-                   command=self.git_init).pack(side="right")
-        ttk.Button(frame_buttons, text="git add",
-                   command=self.git_add).pack(side="right", padx=4)
-        ttk.Button(frame_buttons, text="git commit",
-                   command=self.git_commit).pack(side="right")
-        ttk.Button(frame_buttons, text="git restore",
-                   command=self.git_restore).pack(side="right", padx=4)
-        ttk.Button(frame_buttons, text="git restore --staged",
-                   command=self.git_restore_s).pack(side="right")
-        ttk.Button(frame_buttons, text="git rm",
-                   command=self.git_rm).pack(side="right", padx=4)
-        ttk.Button(frame_buttons, text="git rm --cached",
-                   command=self.git_rm_cached).pack(side="right")
-        ttk.Button(frame_buttons, text="git mv",
-                   command=self._git_rename_wrapper).pack(side="right", padx=4)
-
+                   
         # ---  key browsing entry
         self.key_browse_var = tk.StringVar(self)
         self.key_browse_entry = ttk.Entry(self, textvariable=self.key_browse_var,
@@ -580,9 +584,6 @@ class FileBrowser(tk.Toplevel):
             self.entry.selection_range(0, 'end')
             self.entry.focus_set()
 
-    def getdir(self):
-        return self.history[len(self.history)-1]
-
     def _right_tree_select_all(self, event):
         if self.mode == "openpath":
             items = self.right_tree.tag_has('folder') + self.right_tree.tag_has('folder_link') \
@@ -633,7 +634,7 @@ class FileBrowser(tk.Toplevel):
             else:
                 children = self.right_tree.get_children("")
             self.paths_beginning_by = [i for i in children if split(i)[-1][:len(deb)].lower() == deb]
-            sel = self.right_tree.selection()
+            sel = self.click()
             if sel:
                 self.right_tree.selection_remove(*sel)
             if self.paths_beginning_by:
@@ -653,7 +654,7 @@ class FileBrowser(tk.Toplevel):
         """
         self.paths_beginning_by_index += delta
         self.paths_beginning_by_index %= len(self.paths_beginning_by)
-        sel = self.right_tree.selection()
+        sel = self.click()
         if sel:
             self.right_tree.selection_remove(*sel)
         path = abspath(join(self.history[self._hist_index],
@@ -721,50 +722,99 @@ class FileBrowser(tk.Toplevel):
         self.right_tree.heading("date",
                                 command=lambda: self._sort_by_date(not reverse))
 
+    def click(self):
+        sel = self.right_tree.selection()
+        tags = self.right_tree.item(sel[0], "tags")
+        if "untracked" in tags:
+            self.b_git_add.pack(side="right", padx=4)
+        else:
+            self.b_git_add.pack_forget()
+        if "modified" in tags:
+            self.b_git_add.pack(side="right", padx=4)
+            self.b_git_restore.pack(side="right", padx=4)
+        else:
+            self.b_git_add.pack_forget()
+            self.b_git_restore.pack_forget()
+        if "staged" in tags:
+            self.b_git_restore_s.pack(side="right", padx=4)
+            self.b_git_commit.pack(side="right", padx=4)
+        else:
+            self.b_git_restore_s.pack_forget()
+            self.b_git_commit.pack_forget()
+        if "committed" in tags:
+            self.b_git_rm.pack(side="right", padx=4)
+            self.b_git_rm_cached.pack(side="right", padx=4)
+            self.b_git_rename_wrapper.pack(side="right", padx=4)
+        else:
+            self.b_git_rm.pack_forget()
+            self.b_git_rm_cached.pack_forget()
+            self.b_git_rename_wrapper.pack_forget()
+        """
+        untracked : add
+        modified : add, restored
+        staged : restore_s, commit
+        commit : rm_cached, rm, mv
+        """
+        
+        return sel
+
+
+    def update_status(self):
+        self._display_folder_walk(self.getdir())
+
+    def getdir(self):
+        return self.history[len(self.history)-1]
+    
+    def split_dir_name(self,fullname : str):
+        filedir=fullname[::-1]
+        filedir=fullname[:len(fullname)-filedir.index("\\")-1]
+        filename=fullname[len(filedir)+1:]
+        return filename, filedir
+    
     def is_git_repo(self):
         cur_dir=self.getdir()
         for dir in self.history:
-            if len(dir)<=len(cur_dir):
+            if dir in cur_dir:
                 if ".git" in walk(dir).send(None)[1]:
                     return True
         return False
 
-    def getstatus(self, filename):
-        filedir=filename[::-1]
-        filedir=filename[:len(filename)-filedir.index("\\")-1]
-        filename=filename[len(filedir)+1:]
+    def getstatus(self, fullname):
+        filename,filedir=self.split_dir_name(fullname)
         if ".git" in filename:
             return "IT_IS_DOT_GIT"
-        if self.is_git_repo():
+        if self.is_git_repo() and filename in subprocess.run(['git', 'ls-files', filename], cwd=filedir, capture_output=True).stdout.decode().strip():
             try:
-                arg=subprocess.run(['git', 'status', filename], cwd=filedir, capture_output=True).stdout
-                arg="".join(chr(i) for i in arg)
-                if True:
-                    for st in ["nothing to commit", "Untracked", "git_copied", "git_renamed", "git_deleted", "git_added", "modified"]:
-                        if st in arg:
-                            print(st)
-                            return st
-                return "nothing to commit"
+                arg=subprocess.run(['git', 'status', filename], cwd=filedir, capture_output=True).stdout.decode().strip()
+                stages=["Untracked", "Changes not staged for commit", "Changes to be committed", "nothing to commit"]
+                stages_to_return=["untracked" , "modified" , "staged" , "committed"]
+                ret=[]
+                for i in range(len(stages)):
+                    if stages[i] in arg:
+                        ret.append(stages_to_return[i])
+                return ret
             except StopIteration:
                 self._display_folder_listdir(dir)
             except PermissionError as e:
                 cst.showerror('PermissionError', str(e), master=self)
-        return "NOT_IN_GIT_DIR"
+        else:
+            return "NOT_IN_GIT_DIR"
                 
+
+    def getstatus_for_sort(self, fullname):
+        return self.getstatus(fullname)[0]
+        
     def _sort_by_status(self, reverse):
         """Sort files and folders by stage."""
-        files = list(self.right_tree.tag_has("file"))
-        files.extend(list(self.right_tree.tag_has("file_link")))
-        folders = list(self.right_tree.tag_has("folder"))
-        folders.extend(list(self.right_tree.tag_has("folder_link")))
-        l = len(folders)
-        folders.sort(reverse=reverse, key=self.getstatus)
-        files.sort(reverse=reverse, key=self.getstatus)
-
-        for index, item in enumerate(folders):
+        
+        files_folders = list(self.right_tree.tag_has("file"))
+        files_folders.extend(list(self.right_tree.tag_has("file_link")))
+        files_folders.extend(list(self.right_tree.tag_has("folder")))
+        files_folders.extend(list(self.right_tree.tag_has("folder_link")))
+        files_folders.sort(reverse=reverse, key=self.getstatus_for_sort)
+        
+        for index, item in enumerate(files_folders):
             self.move_item(item, index)
-        for index, item in enumerate(files):
-            self.move_item(item, index + l)
         
         self.right_tree.heading("gitstatus",
                                 command=lambda: self._sort_by_status(not reverse))
@@ -772,7 +822,7 @@ class FileBrowser(tk.Toplevel):
     # ---  file selection
     def _file_selection_save(self, event):
         """Save mode only: put selected file name in name_entry."""
-        sel = self.right_tree.selection()
+        sel = self.click()
         if sel:
             sel = sel[0]
             tags = self.right_tree.item(sel, "tags")
@@ -788,7 +838,7 @@ class FileBrowser(tk.Toplevel):
 
     def _file_selection_openfile(self, event):
         """Put selected file name in path_entry if visible."""
-        sel = self.right_tree.selection()
+        sel = self.click()
         if sel and self.entry.winfo_ismapped():
             self.entry.delete(0, 'end')
             self.entry.insert("end", self.right_tree.item(sel[0], "text"))
@@ -800,13 +850,13 @@ class FileBrowser(tk.Toplevel):
         Prevent selection of files in opendir mode and put selected folder
         name in path_entry if visible.
         """
-        sel = self.right_tree.selection()
+        sel = self.click()
         if sel:
             for s in sel:
                 tags = self.right_tree.item(s, "tags")
                 if ("file" in tags) or ("file_link" in tags):
                     self.right_tree.selection_remove(s)
-            sel = self.right_tree.selection()
+            sel = self.click()
             if len(sel) == 1 and self.entry.winfo_ismapped():
                 self.entry.delete(0, 'end')
                 self.entry.insert("end", self.right_tree.item(sel[0], "text"))
@@ -901,7 +951,7 @@ class FileBrowser(tk.Toplevel):
 
     def _select(self, event):
         """display folder content on double click / Enter, validate if file."""
-        sel = self.right_tree.selection()
+        sel = self.click()
         if sel:
             sel = sel[0]
             tags = self.right_tree.item(sel, "tags")
@@ -1122,6 +1172,7 @@ class FileBrowser(tk.Toplevel):
             if self.foldercreation:
                 self.b_new_folder.grid()
             self.b_update_status.grid()
+
         # reset history
         if reset:
             if not self._hist_index == -1:
@@ -1163,9 +1214,10 @@ class FileBrowser(tk.Toplevel):
                     else:
                         tags = tags + ("file",)
                     
-                    gits=self.getstatus(self.getdir()+"\\"+p)
+                    gits=self.getstatus(p)
                     if gits != "NOT_IN_GIT_DIR":
-                        tags = tags + (gits,)
+                        for g in gits:
+                            tags = tags + (g, )
                     else:
                         gits=""
 
@@ -1173,30 +1225,31 @@ class FileBrowser(tk.Toplevel):
                         stats = stat(p)
                     except OSError:
                         self.right_tree.insert("", "end", p, text=f, tags=tags,
-                                               values=("", "??", "??", gits))
+                                               values=("", "??", "??", ", ".join(_ for _ in gits)))
                     else:
                         self.right_tree.insert("", "end", p, text=f, tags=tags,
                                                values=("",
                                                        display_size(stats.st_size),
                                                        display_modification_date(stats.st_mtime),
-                                                       gits))
+                                                       ", ".join(_ for _ in gits)))
             elif isdir(p):
                 if islink(p):
                     tags = tags + ("folder_link",)
                 else:
                     tags = tags + ("folder",)
                     
-                gits=self.getstatus(self.getdir()+"\\"+p)
+                gits=self.getstatus(p)
                 if gits == "IT_IS_DOT_GIT":
                     self.right_tree.insert("", "end", p, text=f, tags=tags,
                                            values=("", "", get_modification_date(p)))
                 else:
                     if gits != "NOT_IN_GIT_DIR":
-                        tags = tags + (gits,)
+                        for g in gits:
+                            tags = tags + (g, )
                     else:
                         gits=""
                     self.right_tree.insert("", "end", p, text=f, tags=tags,
-                                           values=("", "", get_modification_date(p), gits))
+                                           values=("", "", get_modification_date(p), ", ".join(_ for _ in gits)))
             else:  # broken link
                 tags = tags + ("link_broken",)
                 self.right_tree.insert("", "end", p, text=f, tags=tags,
@@ -1235,6 +1288,7 @@ class FileBrowser(tk.Toplevel):
             if self.foldercreation:
                 self.b_new_folder.grid()
             self.b_update_status.grid()
+
         # reset history
         if reset:
             if not self._hist_index == -1:
@@ -1275,17 +1329,18 @@ class FileBrowser(tk.Toplevel):
                     tags = tags + (str(i % 2),)
                     i += 1
                 
-                gits=self.getstatus(self.getdir()+"\\"+p)
+                gits=self.getstatus(p)
                 if gits == "IT_IS_DOT_GIT":
                     self.right_tree.insert("", "end", p, text=d, tags=tags,
                                            values=("", "", get_modification_date(p)))
                 else:
                     if gits != "NOT_IN_GIT_DIR":
-                        tags = tags + (gits,)
+                        for g in gits:
+                            tags = tags + (g, )
                     else:
                         gits=""
                     self.right_tree.insert("", "end", p, text=d, tags=tags,
-                                           values=("", "", get_modification_date(p), gits))
+                                           values=("", "", get_modification_date(p), ", ".join(_ for _ in gits)))
             # display files
             files.sort(key=lambda n: n.lower())
             extension = self.filetypes[self.filetype.get()]
@@ -1310,9 +1365,10 @@ class FileBrowser(tk.Toplevel):
                         tags = tags + (str(i % 2),)
                         i += 1
 
-                    gits=self.getstatus(self.getdir()+"\\"+p)
+                    gits=self.getstatus(p)
                     if gits != "NOT_IN_GIT_DIR":
-                        tags = tags + (gits,)
+                        for g in gits:
+                            tags = tags + (g, )
                     else:
                         gits=""
 
@@ -1320,7 +1376,7 @@ class FileBrowser(tk.Toplevel):
                                            values=("",
                                                    display_size(stats.st_size),
                                                    display_modification_date(stats.st_mtime),
-                                                   gits))
+                                                   ", ".join(_ for _ in gits)))
             items = self.right_tree.get_children("")
             if items:
                 self.right_tree.focus_set()
@@ -1357,6 +1413,7 @@ class FileBrowser(tk.Toplevel):
             if self.foldercreation:
                 self.b_new_folder.grid()
             self.b_update_status.grid()
+
         # reset history
         if reset:
             if not self._hist_index == -1:
@@ -1401,14 +1458,15 @@ class FileBrowser(tk.Toplevel):
                     tags = tags + (str(i % 2),)
                     i += 1
 
-                gits=self.getstatus(self.getdir()+"\\"+name)
+                gits=self.getstatus(folder+"\\"+name)
                 if gits == "IT_IS_DOT_GIT":
                     self.right_tree.insert("", "end", f.path, text=name, tags=tags,
                                            values=("", "",
                                                    display_modification_date(stats.st_mtime)))
                 else:
                     if gits != "NOT_IN_GIT_DIR":
-                        tags = tags + (gits,)
+                        for g in gits:
+                            tags = tags + (g, )
                     else:
                         gits=""
 
@@ -1418,12 +1476,12 @@ class FileBrowser(tk.Toplevel):
                                                    values=("",
                                                            display_size(stats.st_size),
                                                            display_modification_date(stats.st_mtime),
-                                                           gits))
+                                                           ", ".join(_ for _ in gits)))
                     else:
                         self.right_tree.insert("", "end", f.path, text=name, tags=tags,
                                                values=("", "",
                                                        display_modification_date(stats.st_mtime),
-                                                       gits))
+                                                       ", ".join(_ for _ in gits)))
             items = self.right_tree.get_children("")
             if items:
                 self.right_tree.focus_set()
@@ -1468,9 +1526,6 @@ class FileBrowser(tk.Toplevel):
             e.bind("<FocusOut>", cancel)
             e.focus_set()
 
-    def update_status(self):
-        self._display_folder_walk(self.getdir())
-
     def move_item(self, item, index):
         """Move item to index and update dark/light line alternance."""
         self.right_tree.move(item, "", index)
@@ -1510,7 +1565,6 @@ class FileBrowser(tk.Toplevel):
         """Return selection."""
         return self.result
     
-
     def git_init(self):
         dir=self.getdir()
         subprocess.run(['git', 'init', dir])
@@ -1519,20 +1573,21 @@ class FileBrowser(tk.Toplevel):
     def git_add(self):
         dir = self.getdir()
         
-        if os.path.exists(os.path.join(dir, ".git")):
-            sel = self.right_tree.selection()
+        if self.is_git_repo():
+            sel = self.click()
         
             if len(sel) == 0:
                 answer = messagebox.askquestion("Confirmation", "Do you want to add all modified files?")
                 if answer == "yes":
                     subprocess.run(['git', 'add', '.'], cwd=dir)
-                    self._display_folder_walk(dir)
+                    self.update_status()
                 else:
                     return
         
-            sel = sel[0]
-            subprocess.run(['git', 'add', sel], cwd=dir)
-            self._display_folder_walk(dir)
+            for _ in sel:
+                subprocess.run(['git', 'add', _], cwd=dir)
+                self.update_status()
+
         else:
             print("fatal: not a git repository (or any of the parent directories): .git")
 
@@ -1540,85 +1595,72 @@ class FileBrowser(tk.Toplevel):
     def git_commit(self):
         dir = self.getdir()
 
-        os.chdir(dir)
-        msg = tk.simpledialog.askstring("commit", "Enter your commit message: ") #커밋메세지 작성
+        #############os.chdir(dir)############
+        msg = tk.simpledialog.askstring("commit", "Enter your commit message: ") #Ŀ�Ը޼��� �ۼ�
         
-        if msg and msg.strip(): # 커밋 메세지 작성 후 "OK" 버튼이 눌렀을 때
-            result = subprocess.run(['git', 'commit', '-m', msg], cwd=dir)
-            self._display_folder_walk(dir)
-        elif msg is not None: # "OK" 버튼이 눌렸을 때 메시지가 빈 문자열인 경우
+        if msg and msg.strip(): # Ŀ�� �޼��� �ۼ� �� "OK" ��ư�� ������ ��
+            subprocess.run(['git', 'commit', '-m', msg], cwd=dir)
+            self.update_status()
+        elif msg is not None: # "OK" ��ư�� ������ �� �޽����� �� ���ڿ��� ���
             messagebox.showerror("Error", "Commit message cannot be empty.")
-        elif msg is None: #"Cancel" 버튼 눌렀을 때
+        elif msg is None: #"Cancel" ��ư ������ ��
             pass    
         
-        self._display_folder_walk(dir)    
+        self.update_status()
             
-    def git_restore(self): # modified -> unmodified (아직 add전 수정만 한 상태에서 최근 커밋 상태로 돌아가기 == 수정 취소)
-        dir = self.getdir()
-     
-        file_tuple = self.right_tree.selection() #튜플형태
+    def git_restore(self): # modified -> unmodified (���� add�� ������ �� ���¿��� �ֱ� Ŀ�� ���·� ���ư��� == ���� ���)
+        file_tuple = self.click() #Ʃ������
         
-        if len(file_tuple)>0:   # tuple이 empty한지 한번 더 체크
-            file_path = file_tuple[0] #클릭한 파일의 경로
-            split_string = file_path.split('\\')
-            file_name = split_string[-1] #경로의 마지막 부분이 file_name
-            
-            result = subprocess.run(['git', 'restore', file_name], cwd=dir)
-            self._display_folder_walk(dir)  
+        if len(file_tuple)>0:   # tuple�� empty���� �ѹ� �� üũ
+            for file_path in file_tuple:
+                file_name, dir = self.split_dir_name(file_path) #����� ������ �κ��� file_name
+
+                subprocess.run(['git', 'restore', file_name], cwd=dir)
+                self.update_status()
         else:
             messagebox.showerror("Error", "No file selected for restore.")
             print("No file selected.")
     
-    def git_restore_s(self): # staged -> modified (add 한 상태에서 add 전 수정만 한 상태로 돌아가기 == add 취소)
-        dir = self.getdir()
-     
-        file_tuple = self.right_tree.selection() #튜플형태
-        if len(file_tuple)>0:   # tuple이 empty한지 한번 더 체크
-            file_path = file_tuple[0] #클릭한 파일의 경로
-            split_string = file_path.split('\\')
-            file_name = split_string[-1] #경로의 마지막 부분이 file_name
-            
-            result = subprocess.run(['git', 'restore', '--staged', file_name], cwd=dir)
-            self._display_folder_walk(dir)  
+    def git_restore_s(self): # staged -> modified (add �� ���¿��� add �� ������ �� ���·� ���ư��� == add ���)
+        file_tuple = self.click() #Ʃ������
+        if len(file_tuple)>0:   # tuple�� empty���� �ѹ� �� üũ
+            for file_path in file_tuple:
+                file_name, dir = self.split_dir_name(file_path) #����� ������ �κ��� file_name
+
+                subprocess.run(['git', 'restore', '--staged', file_name], cwd=dir)
+                self.update_status()
         else:
             messagebox.showerror("Error", "No file selected for restore.")
             print("No file selected.")
 
     def git_rm(self): #committed -> staged
-        dir = self.getdir()
-
-        file_tuple = self.right_tree.selection()
+        file_tuple = self.click()
         if len(file_tuple) > 0:
-            file_path = file_tuple[0]
-            split_string = file_path.split('\\')
-            file_name = split_string[-1]
-
-            result = subprocess.run(['git', 'rm', file_name], cwd=dir)
-            if result.returncode == 0:  # subprocess 실행이 정상적으로 끝난 경우
-                self._display_folder_walk(dir)
-            else:
-                print("Failed to remove file from git repository.")
+            for file_path in file_tuple:
+                file_name, dir = self.split_dir_name(file_path) #����� ������ �κ��� file_name
+                result = subprocess.run(['git', 'rm', '-r', file_name], cwd=dir)
+                if result.returncode == 0:  # subprocess ������ ���������� ���� ���
+                    self.update_status()
+                else:
+                    print("Failed to remove file from git repository.")
         else:
             print("No file selected.")
 
     def git_rm_cached(self):
-        dir = self.getdir()
-
-        file_tuple = self.right_tree.selection()
+        file_tuple = self.click()
         if len(file_tuple) > 0:
-            file_path = file_tuple[0]
-            split_string = file_path.split('\\')
-            file_name = split_string[-1]
+            for file_path in file_tuple:
+                file_name, dir = self.split_dir_name(file_path) #����� ������ �κ��� file_name
 
-            result = subprocess.run(['git', 'rm', '--cached', file_name], cwd=dir)
-            if result.returncode == 0:
-                self._display_folder_walk(dir)
-            else:
-                print("Failed to remove file from git repository.")
+                result = subprocess.run(['git', 'rm', '-r', '--cached', file_name], cwd=dir)
+                if result.returncode == 0:
+                    self.update_status()
+                else:
+                    print("Failed to remove file from git repository.")
         else:
             print("No file selected.")
     
-
+    
     def _get_git_directory(self):
         try:
             result = subprocess.run(["git", "rev-parse", "--show-toplevel"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -1637,7 +1679,7 @@ class FileBrowser(tk.Toplevel):
 
     def git_rename(self):
         
-        selected = self.right_tree.selection()
+        selected = self.click()
         
         old_path = self.right_tree.item(selected[0])['values'][0]
 
@@ -1721,7 +1763,7 @@ class FileBrowser(tk.Toplevel):
                     rep = False
             else:
                 # recently used file
-                sel = self.right_tree.selection()
+                sel = self.click()
                 if len(sel) == 1:
                     path = sel[0]
                     tags = self.right_tree.item(sel, "tags")
@@ -1782,7 +1824,7 @@ class FileBrowser(tk.Toplevel):
 
     def _validate_multiple_sel(self):
         """Validate selection in open mode with multiple selection."""
-        sel = self.right_tree.selection()
+        sel = self.click()
         if self.mode == "openfile":
             if len(sel) == 1:
                 sel = sel[0]
@@ -1809,7 +1851,7 @@ class FileBrowser(tk.Toplevel):
 
     def _validate_single_sel(self):
         """Validate selection in open mode without multiple selection."""
-        sel = self.right_tree.selection()
+        sel = self.click()
         if self.mode == "openfile":
             if len(sel) == 1:
                 sel = sel[0]
