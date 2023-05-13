@@ -116,6 +116,7 @@ class FileBrowser(tk.Toplevel):
             enable the user to create new folders if True (default)
         """
         # compatibility with tkinter.filedialog arguments: the parent window is called 'master'
+        self.parent = parent
         if 'master' in kw and parent is None:
             parent = kw.pop('master')
         if 'defaultextension' in kw and not defaultext:
@@ -1695,8 +1696,9 @@ class FileBrowser(tk.Toplevel):
     
     def _get_git_directory(self):
         """Returns the path to the .git directory."""
+        cur_dir = self.getdir()
         for dir in self.history:
-            if ".git" in walk(dir).send(None)[1]:
+            if cur_dir in dir and ".git" in walk(dir).send(None)[1]:
                 return dir
         return None
             
@@ -1705,11 +1707,12 @@ class FileBrowser(tk.Toplevel):
     def _git_rename_wrapper(self):
         if self._get_git_directory():
             self.git_rename()
-
+            
     def git_rename(self):
         old_path = self.click()[0]
         # Ask for new file path
-        new_path = tkfilebrowser.askopendirname(parent=self.split_dir_name(self.getdir())[1])
+        new_path = tkfilebrowser.askopendirname(parent=self.parent)
+        print(new_path)
 
 
         """tk.filedialog.askdirectory(
@@ -1726,6 +1729,7 @@ class FileBrowser(tk.Toplevel):
             if not new_file_name:
                 return
             new_path = os.path.join(new_path, new_file_name)
+            print(new_path)
 
             # Check if the new file path already exists
             if os.path.exists(new_path):
@@ -1735,6 +1739,7 @@ class FileBrowser(tk.Toplevel):
                 break
 
         new_path = new_path.replace("/","\\")
+        print(new_path)
 
         try:
             subprocess.run(["git", "mv", old_path, new_path], cwd=self._get_git_directory(), check=True, shell=False, stderr=subprocess.PIPE)
