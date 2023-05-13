@@ -1718,7 +1718,7 @@ class FileBrowser(tk.Toplevel):
         """Returns the path to the .git directory."""
         cur_dir = self.getdir()
         for dir in self.history:
-            if cur_dir in dir and ".git" in walk(dir).send(None)[1]:
+            if dir in cur_dir and ".git" in walk(dir).send(None)[1]:
                 return dir
         return None
             
