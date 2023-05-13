@@ -756,7 +756,6 @@ class FileBrowser(tk.Toplevel):
         return sel
 
     def clear_buttons(self):
-        self.b_git_init.pack_forget()
         self.b_git_add.pack_forget()
         self.b_git_restore.pack_forget()
         self.b_git_mv.pack_forget()
@@ -765,6 +764,19 @@ class FileBrowser(tk.Toplevel):
         self.b_git_rm.pack_forget()
         self.b_git_rm_cached.pack_forget()
         self.b_git_rename_wrapper.pack_forget()
+
+
+    def init_need(self,dir):
+        if ".git" not in walk(dir).send(None)[1]:
+            self.b_git_init.pack(side="right", padx=4)
+        else:
+            self.b_git_init.pack_forget()
+
+    def init_need_num(self,num):
+        if num == 0:
+            self.b_git_init.pack(side="right", padx=4)
+        else:
+            self.b_git_init.pack_forget()
 
     def update_status(self):
         self._display_folder_walk(self.getdir())
@@ -1206,8 +1218,10 @@ class FileBrowser(tk.Toplevel):
         root = folder
         extension = self.filetypes[self.filetype.get()]
         content = listdir(folder)
+        self.init_need_num(len(content))
         i = 0
         for f in content:
+            self.init_need(folder)
             p = join(root, f)
             if f[0] == ".":
                 tags = ("hidden",)
@@ -1326,6 +1340,7 @@ class FileBrowser(tk.Toplevel):
         self.hidden = ()
         try:
             root, dirs, files = walk(folder).send(None)
+            self.init_need_num(len(files)+len(dirs))
             # display folders first
             dirs.sort(key=lambda n: n.lower())
             i = 0
@@ -1345,6 +1360,7 @@ class FileBrowser(tk.Toplevel):
                     i += 1
                 
                 gits=self.getstatus(p)
+                self.init_need(self.getdir())
                 if "untracked" in gits or "modified" in gits:
                     self.b_git_add.pack(side="right", padx=4)
                 if gits == "IT_IS_DOT_GIT":
@@ -1383,6 +1399,7 @@ class FileBrowser(tk.Toplevel):
                         i += 1
 
                     gits=self.getstatus(p)
+                    self.init_need(self.getdir())
                     if "untracked" in gits or "modified" in gits:
                         self.b_git_add.pack(side="right", padx=4)
                     if gits != "NOT_IN_GIT_DIR":
@@ -1457,6 +1474,7 @@ class FileBrowser(tk.Toplevel):
         extension = self.filetypes[self.filetype.get()]
         try:
             content = sorted(scandir(folder), key=key_sort_files)
+            self.init_need_num(len(content))
             i = 0
             tags_array = [["folder", "folder_link"],
                           ["file", "file_link"]]
@@ -1479,6 +1497,7 @@ class FileBrowser(tk.Toplevel):
                     i += 1
 
                 gits=self.getstatus(folder+"\\"+name)
+                self.init_need(self.getdir())
                 if "untracked" in gits or "modified" in gits:
                     self.b_git_add.pack(side="right", padx=4)
                 if gits == "IT_IS_DOT_GIT":
@@ -1547,6 +1566,7 @@ class FileBrowser(tk.Toplevel):
             e.bind("<Escape>", cancel)
             e.bind("<FocusOut>", cancel)
             e.focus_set()
+        
 
     def move_item(self, item, index):
         """Move item to index and update dark/light line alternance."""
@@ -1712,15 +1732,6 @@ class FileBrowser(tk.Toplevel):
         old_path = self.click()[0]
         # Ask for new file path
         new_path = tkfilebrowser.askopendirname(parent=self.parent)
-        print(new_path)
-
-
-        """tk.filedialog.askdirectory(
-            initialdir=filedialog
-            os.path.dirname(old_path), title="Select New Directory"
-            )"""
-        if not new_path:
-            return
 
         new_file_name = os.path.basename(old_path)
         while True:
@@ -1729,7 +1740,6 @@ class FileBrowser(tk.Toplevel):
             if not new_file_name:
                 return
             new_path = os.path.join(new_path, new_file_name)
-            print(new_path)
 
             # Check if the new file path already exists
             if os.path.exists(new_path):
@@ -1739,7 +1749,6 @@ class FileBrowser(tk.Toplevel):
                 break
 
         new_path = new_path.replace("/","\\")
-        print(new_path)
 
         try:
             subprocess.run(["git", "mv", old_path, new_path], cwd=self._get_git_directory(), check=True, shell=False, stderr=subprocess.PIPE)
