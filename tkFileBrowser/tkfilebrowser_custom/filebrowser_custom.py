@@ -732,9 +732,6 @@ class FileBrowser(tk.Toplevel):
         sel = self.right_tree.selection()
         if len(sel) > 0 and self.is_git_repo():
             tags = self.right_tree.item(sel[0], "tags")
-            if ".git" not in walk(self.getdir()).send(None)[1]:
-                self.clear_buttons()
-                self.b_git_init.pack(side="left", padx=4)
             if "committed" in tags:
                 self.clear_buttons()
                 self.b_git_rm.pack(side="left", padx=4)
