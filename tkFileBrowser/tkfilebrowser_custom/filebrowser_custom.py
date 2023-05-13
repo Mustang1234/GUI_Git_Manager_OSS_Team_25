@@ -735,21 +735,21 @@ class FileBrowser(tk.Toplevel):
             if ".git" not in walk(self.getdir()).send(None)[1]:
                 self.clear_buttons()
                 self.b_git_init.pack(side="left", padx=4)
-            if "modified" in tags:
+            if "committed" in tags:
                 self.clear_buttons()
-                self.b_git_add.pack(side="left", padx=4)
-                self.b_git_restore.pack(side="left", padx=4)
+                self.b_git_rm.pack(side="left", padx=4)
+                self.b_git_rm_cached.pack(side="left", padx=4)
+                self.b_git_rename_wrapper.pack(side="left", padx=4)
             if "staged" in tags:
                 self.clear_buttons()
                 self.b_git_rm_cached.pack(side="left", padx=4)
                 self.b_git_restore_s.pack(side="left", padx=4)
                 self.b_git_commit.pack(side="left", padx=4)
                 self.b_git_mv.pack(side="left", padx=4)
-            if "committed" in tags:
+            if "modified" in tags:
                 self.clear_buttons()
-                self.b_git_rm.pack(side="left", padx=4)
-                self.b_git_rm_cached.pack(side="left", padx=4)
-                self.b_git_rename_wrapper.pack(side="left", padx=4)
+                self.b_git_add.pack(side="left", padx=4)
+                self.b_git_restore.pack(side="left", padx=4)
             if "untracked" in tags:
                 self.clear_buttons()
                 self.b_git_add.pack(side="left", padx=4)
