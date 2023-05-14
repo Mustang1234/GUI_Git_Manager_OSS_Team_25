@@ -96,35 +96,34 @@ how to use? status에 따라서 누를 수 있는 버튼들을 표시해주는 �
 - pip를 시스템 환경 변수에 등록하세요. (제어판->시스템->고급시스템 설정->환경변수->시스템 변수의 path에 파이썬 경로와 파이썬 경로\Scripts 2개 추가)
 </br>
 
-<img width="50%" alt="pip1" src="https://github.com/Mustang1234/GUI_Git_Manager_OSS_Team_25/assets/80468377/5e1352d0-9b7f-45c2-860c-b2aec702ff16"></img></br>
-제어판에서 시스템 및 보안 클릭</br>
+<img width="842" alt="pip1" src="https://github.com/Mustang1234/GUI_Git_Manager_OSS_Team_25/assets/80468377/76bc6484-74b8-406f-a344-24d57dd77d5d"></img></br>
+제어판에서 시스템 및 보안 클릭</br></br>
 
 
-<img width="50%" alt="pip2" src="https://github.com/Mustang1234/GUI_Git_Manager_OSS_Team_25/assets/80468377/246b3387-2c71-427f-9bf2-0f93de8b66e1"></img></br>
-시스템 클릭</br>
+<img width="837" alt="pip2" src="https://github.com/Mustang1234/GUI_Git_Manager_OSS_Team_25/assets/80468377/1b7e21e3-4fb8-4028-b006-2b67123377f4"></img></br>
+시스템 클릭</br></br>
 
 
-<img width="308" alt="pip3" src="https://github.com/Mustang1234/GUI_Git_Manager_OSS_Team_25/assets/80468377/20d87c83-0e1b-4c3f-83d7-1341b9d4a7fd"></img></br>
-고급시스템 설정 클릭</br>
+<img width="308" alt="pip3" src="https://github.com/Mustang1234/GUI_Git_Manager_OSS_Team_25/assets/80468377/927dd381-bf59-4af1-a756-89cded334d74"></img></br>
+고급시스템 설정 클릭</br></br>
 
 
-<img width="340" alt="pip4" src="https://github.com/Mustang1234/GUI_Git_Manager_OSS_Team_25/assets/80468377/a9171bbf-8f29-4272-bb5f-dceebfb661dc"></img></br>
-환경변수 클릭</br>
+<img width="340" alt="pip4" src="https://github.com/Mustang1234/GUI_Git_Manager_OSS_Team_25/assets/80468377/e9a9a621-df1e-4ac8-bab0-29c569a6dfd6"></img></br>
+환경변수 클릭</br></br>
 
 
-<img width="319" alt="pip5" src="https://github.com/Mustang1234/GUI_Git_Manager_OSS_Team_25/assets/80468377/59ceecfa-f21a-40ab-a95c-a6eef852ac9f"></img></br>
-하단 시스템 변수의 Path 항목 더블클릭</br>
+<img width="319" alt="pip5" src="https://github.com/Mustang1234/GUI_Git_Manager_OSS_Team_25/assets/80468377/63369aeb-960f-4e9d-a24e-f419dcecf2fd"></img></br>
+하단 시스템 변수의 Path 항목 더블클릭</br></br>
 
 
-<img width="454" alt="pip6" src="https://github.com/Mustang1234/GUI_Git_Manager_OSS_Team_25/assets/80468377/d2c82099-7512-4ab8-9ea7-8be1a02a2ea5"></img></br>
-본인의 파이썬 경로를 복사해와서 파이썬 경로, 파이썬경로\scripts 두 개를 추가</br>
+<img width="454" alt="pip6" src="https://github.com/Mustang1234/GUI_Git_Manager_OSS_Team_25/assets/80468377/e71e78f0-7f94-4559-990b-d446c8afa269"></img></br>
+본인의 파이썬 경로를 복사해와서 파이썬 경로, 파이썬경로\scripts 두 개를 추가</br></br>
 
 
 
 - 그 다음 cmd 창을 새로 켜서 위의 명령어를 실행합니다.</br>
-["설치 및 실행 준비"](#설치-및-실행-준비) 3번 다시 시도하기.
+["설치 및 실행 준비"](#설치-및-실행-준비) 3번 다시 시도하기.</br></br></br>
 
 
-</br>
 2. 특정 모듈이 다운로드 되지 않을 때 해당 명령어를 입력하여 pip를 최신화 해주세요.  </br>
-- ```pip install --update pip```
+```pip install --update pip```
