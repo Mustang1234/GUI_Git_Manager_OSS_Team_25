@@ -236,30 +236,6 @@ class FileBrowser(tk.Toplevel):
         self.im_recent_24 = cst.PhotoImage(file=cst.IM_RECENT_24, master=self)
         self.git_status_update = cst.PhotoImage(file=cst.GIT_STATUS_UPDATE, master=self)
 
-        # ---  filetypes
-        self.filetype = tk.StringVar(self)
-        self.filetypes = {}
-        if filetypes:
-            for name, exts in filetypes:
-                if name not in self.filetypes:
-                    self.filetypes[name] = []
-                self.filetypes[name] = r'%s$' % exts.strip().replace('.', '\.').replace('*', '.*')
-            values = list(self.filetypes.keys())
-            w = max([len(f) for f in values] + [5])
-            b_filetype = ttk.Combobox(self, textvariable=self.filetype,
-                                      state='readonly',
-                                      style='types.tkfilebrowser.TCombobox',
-                                      values=values,
-                                      width=w)
-            b_filetype.grid(row=3, sticky="e", padx=10, pady=(4, 0))
-            self.filetype.set(filetypes[0][0])
-            try:
-                self.filetype.trace_add('write', lambda *args: self._change_filetype())
-            except AttributeError:
-                self.filetype.trace('w', lambda *args: self._change_filetype())
-        else:
-            self.filetypes[""] = r".*$"
-
         # ---  recent files
         self._recent_files = RecentFiles(cst.RECENT_FILES, 30)
 
@@ -279,43 +255,50 @@ class FileBrowser(tk.Toplevel):
 
         # ---  path bar
         self.path_var = tk.StringVar(self)
-        frame_bar = ttk.Frame(self)
-        frame_bar.columnconfigure(0, weight=1)
-        frame_bar.grid(row=1, sticky="ew", pady=10, padx=10)
-        frame_recent = ttk.Frame(frame_bar)
-        frame_recent.grid(row=0, column=0, sticky="w")
-        ttk.Label(frame_recent, image=self.im_recent_24).pack(side="left")
-        ttk.Label(frame_recent, text=_("Recently used"),
+        self.frame_bar = ttk.Frame(self)
+        self.frame_bar.columnconfigure(0, weight=1)
+        self.frame_bar.grid(row=1, sticky="ew", pady=3, padx=10)
+        self.frame_recent = ttk.Frame(self.frame_bar)
+        self.frame_recent.grid(row=0, column=0, sticky="w", pady=3)
+        ttk.Label(self.frame_recent, image=self.im_recent_24).pack(side="left")
+        ttk.Label(self.frame_recent, text=_("Recently used"),
                   font="TkDefaultFont 9 bold").pack(side="left", padx=4)
-        self.path_bar = ttk.Frame(frame_bar)
+        self.path_bar = ttk.Frame(self.frame_bar)
         self.path_bar.grid(row=0, column=0, sticky="ew")
         self.path_bar_buttons = []
-        frame_buttons = ttk.Frame(self)
-        frame_buttons.grid(row=4, sticky="ew", pady=10, padx=10)
-        self.b_new_folder = ttk.Button(frame_bar, image=self.im_new,
+        self.b_new_folder = ttk.Button(self.frame_bar, image=self.im_new,
                                        command=self.create_folder)
-        self.b_update_status = ttk.Button(frame_bar, image=self.git_status_update,
+        self.b_update_status = ttk.Button(self.frame_bar, image=self.git_status_update,
                                        command=self.update_status)
-        
-        self.b_quit = ttk.Button(frame_buttons, text=cancelbuttontext,
-                                       command=self.quit).pack(side="right", padx=4)
-        self.b_git_init = ttk.Button(frame_buttons, text="git init",
+        self.frame_buttons1 = ttk.Frame(self)
+        self.frame_buttons1.grid(row=3, sticky="ew", pady=3, padx=10)
+        self.frame_buttons2 = ttk.Frame(self)
+        self.frame_buttons2.grid(row=4, sticky="ew", pady=3, padx=10)
+        self.b_branch = ttk.Button(self.frame_buttons1, text="Branch",
+                                       command=self.branch).pack(side="left",padx=(0,3))
+        self.b_log = ttk.Button(self.frame_buttons1, text="Log",
+                                       command=self.log).pack(side="left",padx=(0,3))
+        self.b_clone = ttk.Button(self.frame_buttons1, text="Clone",
+                                       command=self.clone).pack(side="left",padx=(0,3))
+        self.b_quit = ttk.Button(self.frame_buttons2, text=cancelbuttontext,
+                                       command=self.quit).pack(side="right", padx=(4,0))
+        self.b_git_init = ttk.Button(self.frame_buttons2, text="git init",
                                        command=self.git_init)
-        self.b_git_add = ttk.Button(frame_buttons, text="git add",
+        self.b_git_add = ttk.Button(self.frame_buttons2, text="git add",
                                        command=self.git_add)
-        self.b_git_commit = ttk.Button(frame_buttons, text="git commit",
+        self.b_git_commit = ttk.Button(self.frame_buttons2, text="git commit",
                                        command=self.git_commit)
-        self.b_git_restore = ttk.Button(frame_buttons, text="git restore",
+        self.b_git_restore = ttk.Button(self.frame_buttons2, text="git restore",
                                        command=self.git_restore)
-        self.b_git_restore_s = ttk.Button(frame_buttons, text="git restore --staged",
+        self.b_git_restore_s = ttk.Button(self.frame_buttons2, text="git restore --staged",
                                        command=self.git_restore_s)
-        self.b_git_mv = ttk.Button(frame_buttons, text="git mv",
+        self.b_git_mv = ttk.Button(self.frame_buttons2, text="git mv",
                                        command=self.git_rename)
-        self.b_git_rm = ttk.Button(frame_buttons, text="git rm",
+        self.b_git_rm = ttk.Button(self.frame_buttons2, text="git rm",
                                        command=self.git_rm)
-        self.b_git_rm_cached = ttk.Button(frame_buttons, text="git rm --cached",
+        self.b_git_rm_cached = ttk.Button(self.frame_buttons2, text="git rm --cached",
                                        command=self.git_rm_cached)
-        self.b_git_rename_wrapper = ttk.Button(frame_buttons, text="git mv",
+        self.b_git_rename_wrapper = ttk.Button(self.frame_buttons2, text="git mv",
                                        command=self._git_rename_wrapper)
         
         if self.foldercreation:
@@ -338,7 +321,7 @@ class FileBrowser(tk.Toplevel):
                 self.entry.insert(0, initialfile)
         else:
             self.multiple_selection = multiple_selection
-            self.entry = ttk.Entry(frame_bar, validate="key",
+            self.entry = ttk.Entry(self.frame_bar, validate="key",
                                    validatecommand=(self.complete, "%d", "%S",
                                                     "%i", "%s"))
             self.entry.grid(row=1, column=0, columnspan=2, sticky="ew", padx=0,
@@ -346,7 +329,30 @@ class FileBrowser(tk.Toplevel):
             self.entry.grid_remove()
 
         paned = ttk.PanedWindow(self, orient="horizontal")
-        paned.grid(row=2, sticky="eswn", padx=10)
+        paned.grid(row=2, sticky="eswn", pady=3,padx=10)
+
+        # ---  filetypes
+        self.filetype = tk.StringVar(self)
+        self.filetypes = {}
+        if filetypes:
+            for name, exts in filetypes:
+                if name not in self.filetypes:
+                    self.filetypes[name] = []
+                self.filetypes[name] = r'%s$' % exts.strip().replace('.', '\.').replace('*', '.*')
+            values = list(self.filetypes.keys())
+            w = max([len(f) for f in values] + [5])
+            self.b_filetype = ttk.Combobox(self.frame_buttons1, textvariable=self.filetype,
+                                      state='readonly',
+                                      style='types.tkfilebrowser.TCombobox',
+                                      values=values,
+                                      width=w).pack(side="right", padx=(12,0))
+            self.filetype.set(filetypes[0][0])
+            try:
+                self.filetype.trace_add('write', lambda *args: self._change_filetype())
+            except AttributeError:
+                self.filetype.trace('w', lambda *args: self._change_filetype())
+        else:
+            self.filetypes[""] = r".*$"
 
         # ---  left pane
         left_pane = ttk.Frame(paned)
@@ -734,22 +740,22 @@ class FileBrowser(tk.Toplevel):
             tags = self.right_tree.item(sel[0], "tags")
             if "committed" in tags:
                 self.clear_buttons()
-                self.b_git_rm.pack(side="left", padx=4)
-                self.b_git_rm_cached.pack(side="left", padx=4)
-                self.b_git_rename_wrapper.pack(side="left", padx=4)
+                self.b_git_rm.pack(side="left", padx=(0,4))
+                self.b_git_rm_cached.pack(side="left", padx=(0,4))
+                self.b_git_rename_wrapper.pack(side="left", padx=(0,4))
             if "staged" in tags:
                 self.clear_buttons()
-                self.b_git_rm_cached.pack(side="left", padx=4)
-                self.b_git_restore_s.pack(side="left", padx=4)
-                self.b_git_commit.pack(side="left", padx=4)
-                self.b_git_mv.pack(side="left", padx=4)
+                self.b_git_rm_cached.pack(side="left", padx=(0,4))
+                self.b_git_restore_s.pack(side="left", padx=(0,4))
+                self.b_git_commit.pack(side="left", padx=(0,4))
+                self.b_git_mv.pack(side="left", padx=(0,4))
             if "modified" in tags:
                 self.clear_buttons()
-                self.b_git_add.pack(side="left", padx=4)
-                self.b_git_restore.pack(side="left", padx=4)
+                self.b_git_add.pack(side="left", padx=(0,4))
+                self.b_git_restore.pack(side="left", padx=(0,4))
             if "untracked" in tags:
                 self.clear_buttons()
-                self.b_git_add.pack(side="left", padx=4)
+                self.b_git_add.pack(side="left", padx=(0,4))
         return sel
 
     def clear_buttons(self):
@@ -765,13 +771,13 @@ class FileBrowser(tk.Toplevel):
 
     def init_need(self,dir):
         if ".git" not in walk(dir).send(None)[1]:
-            self.b_git_init.pack(side="left", padx=4)
+            self.b_git_init.pack(side="left", padx=(0,4))
         else:
             self.b_git_init.pack_forget()
 
     def init_need_num(self,num):
         if num == 0:
-            self.b_git_init.pack(side="left", padx=4)
+            self.b_git_init.pack(side="left", padx=(0,4))
         else:
             self.b_git_init.pack_forget()
 
@@ -810,7 +816,7 @@ class FileBrowser(tk.Toplevel):
                         ret.append(stages_to_return[i])
                         if i==0:
                             break
-                return ret
+                return " & ".join(_ for _ in ret)
             except StopIteration:
                 self._display_folder_listdir(dir)
             except PermissionError as e:
@@ -819,8 +825,6 @@ class FileBrowser(tk.Toplevel):
             return "NOT_IN_GIT_DIR"
                 
 
-    def getstatus_for_sort(self, fullname):
-        return " & ".join(_ for _ in self.getstatus(fullname))
         
     def _sort_by_status(self, reverse):
         """Sort files and folders by stage."""
@@ -829,7 +833,7 @@ class FileBrowser(tk.Toplevel):
         files_folders.extend(list(self.right_tree.tag_has("file_link")))
         files_folders.extend(list(self.right_tree.tag_has("folder")))
         files_folders.extend(list(self.right_tree.tag_has("folder_link")))
-        files_folders.sort(reverse=reverse, key=self.getstatus_for_sort)
+        files_folders.sort(reverse=reverse, key=self.getstatus)
         
         for index, item in enumerate(files_folders):
             self.move_item(item, index)
@@ -1215,6 +1219,7 @@ class FileBrowser(tk.Toplevel):
         root = folder
         extension = self.filetypes[self.filetype.get()]
         content = listdir(folder)
+        self.branch()
         self.init_need_num(len(content))
         i = 0
         for f in content:
@@ -1237,9 +1242,9 @@ class FileBrowser(tk.Toplevel):
                     
                     gits=self.getstatus(p)
                     if "untracked" in gits or "modified" in gits:
-                        self.b_git_add.pack(side="left", padx=4)
+                        self.b_git_add.pack(side="left", padx=(0,4))
                     if gits != "NOT_IN_GIT_DIR":
-                        for g in gits:
+                        for g in gits.split(" & "):
                             tags = tags + (g, )
                     else:
                         gits=""
@@ -1248,13 +1253,13 @@ class FileBrowser(tk.Toplevel):
                         stats = stat(p)
                     except OSError:
                         self.right_tree.insert("", "end", p, text=f, tags=tags,
-                                               values=("", "??", "??", " & ".join(_ for _ in gits)))
+                                               values=("", "??", "??", gits))
                     else:
                         self.right_tree.insert("", "end", p, text=f, tags=tags,
                                                values=("",
                                                        display_size(stats.st_size),
                                                        display_modification_date(stats.st_mtime),
-                                                       " & ".join(_ for _ in gits)))
+                                                       gits))
             elif isdir(p):
                 if islink(p):
                     tags = tags + ("folder_link",)
@@ -1263,18 +1268,18 @@ class FileBrowser(tk.Toplevel):
                     
                 gits=self.getstatus(p)
                 if "untracked" in gits or "modified" in gits:
-                    self.b_git_add.pack(side="left", padx=4)
+                    self.b_git_add.pack(side="left", padx=(0,4))
                 if gits == "IT_IS_DOT_GIT":
                     self.right_tree.insert("", "end", p, text=f, tags=tags,
                                            values=("", "", get_modification_date(p)))
                 else:
                     if gits != "NOT_IN_GIT_DIR":
-                        for g in gits:
+                        for g in gits.split(" & "):
                             tags = tags + (g, )
                     else:
                         gits=""
                     self.right_tree.insert("", "end", p, text=f, tags=tags,
-                                           values=("", "", get_modification_date(p), " & ".join(_ for _ in gits)))
+                                           values=("", "", get_modification_date(p), gits))
             else:  # broken link
                 tags = tags + ("link_broken",)
                 self.right_tree.insert("", "end", p, text=f, tags=tags,
@@ -1335,6 +1340,7 @@ class FileBrowser(tk.Toplevel):
         self.right_tree.delete(*self.right_tree.get_children(""))
         self.right_tree.delete(*self.hidden)
         self.hidden = ()
+        self.branch()
         try:
             root, dirs, files = walk(folder).send(None)
             self.init_need_num(len(files)+len(dirs))
@@ -1359,18 +1365,18 @@ class FileBrowser(tk.Toplevel):
                 gits=self.getstatus(p)
                 self.init_need(self.getdir())
                 if "untracked" in gits or "modified" in gits:
-                    self.b_git_add.pack(side="left", padx=4)
+                    self.b_git_add.pack(side="left", padx=(0,4))
                 if gits == "IT_IS_DOT_GIT":
                     self.right_tree.insert("", "end", p, text=d, tags=tags,
                                            values=("", "", get_modification_date(p)))
                 else:
                     if gits != "NOT_IN_GIT_DIR":
-                        for g in gits:
+                        for g in gits.split(" & "):
                             tags = tags + (g, )
                     else:
                         gits=""
                     self.right_tree.insert("", "end", p, text=d, tags=tags,
-                                           values=("", "", get_modification_date(p), " & ".join(_ for _ in gits)))
+                                           values=("", "", get_modification_date(p), gits))
             # display files
             files.sort(key=lambda n: n.lower())
             extension = self.filetypes[self.filetype.get()]
@@ -1398,9 +1404,9 @@ class FileBrowser(tk.Toplevel):
                     gits=self.getstatus(p)
                     self.init_need(self.getdir())
                     if "untracked" in gits or "modified" in gits:
-                        self.b_git_add.pack(side="left", padx=4)
+                        self.b_git_add.pack(side="left", padx=(0,4))
                     if gits != "NOT_IN_GIT_DIR":
-                        for g in gits:
+                        for g in gits.split(" & "):
                             tags = tags + (g, )
                     else:
                         gits=""
@@ -1409,7 +1415,7 @@ class FileBrowser(tk.Toplevel):
                                            values=("",
                                                    display_size(stats.st_size),
                                                    display_modification_date(stats.st_mtime),
-                                                   " & ".join(_ for _ in gits)))
+                                                   gits))
             items = self.right_tree.get_children("")
             if items:
                 self.right_tree.focus_set()
@@ -1469,6 +1475,7 @@ class FileBrowser(tk.Toplevel):
         self.right_tree.delete(*self.hidden)
         self.hidden = ()
         extension = self.filetypes[self.filetype.get()]
+        self.branch()
         try:
             content = sorted(scandir(folder), key=key_sort_files)
             self.init_need_num(len(content))
@@ -1496,14 +1503,14 @@ class FileBrowser(tk.Toplevel):
                 gits=self.getstatus(folder+"\\"+name)
                 self.init_need(self.getdir())
                 if "untracked" in gits or "modified" in gits:
-                    self.b_git_add.pack(side="left", padx=4)
+                    self.b_git_add.pack(side="left", padx=(0,4))
                 if gits == "IT_IS_DOT_GIT":
                     self.right_tree.insert("", "end", f.path, text=name, tags=tags,
                                            values=("", "",
                                                    display_modification_date(stats.st_mtime)))
                 else:
                     if gits != "NOT_IN_GIT_DIR":
-                        for g in gits:
+                        for g in gits.split(" & "):
                             tags = tags + (g, )
                     else:
                         gits=""
@@ -1514,12 +1521,12 @@ class FileBrowser(tk.Toplevel):
                                                    values=("",
                                                            display_size(stats.st_size),
                                                            display_modification_date(stats.st_mtime),
-                                                           " & ".join(_ for _ in gits)))
+                                                           gits))
                     else:
                         self.right_tree.insert("", "end", f.path, text=name, tags=tags,
                                                values=("", "",
                                                        display_modification_date(stats.st_mtime),
-                                                       " & ".join(_ for _ in gits)))
+                                                       gits))
             items = self.right_tree.get_children("")
             if items:
                 self.right_tree.focus_set()
@@ -1720,7 +1727,6 @@ class FileBrowser(tk.Toplevel):
         return None
             
 
-
     def _git_rename_wrapper(self):
         if self._get_git_directory():
             self.git_rename()
@@ -1759,6 +1765,36 @@ class FileBrowser(tk.Toplevel):
             self._display_folder_walk(self.getdir())
         except subprocess.CalledProcessError as e:
             print("Failed to rename file using git mv command. stderr:", e.stderr.decode())
+
+    def branch(self):
+        # 브렌치 창 만들어서 브렌치 띄우는 기능, merge, create, delete 포함!!
+        if self.is_git_repo():
+            self.b_branch_update.pack(side="left")
+            self.b_branch_colon.pack(side="left")
+            cmd=subprocess.run(['git', 'branch' , '-r'], cwd=self._get_git_directory(), capture_output=True).stdout.decode().strip().split("\n")
+            for i in range(len(cmd)):
+                if i>=len(cmd):
+                    break
+                cmd[i].replace(" ", "")
+                if "->" in cmd[i]:
+                    del cmd[i]
+            for i in cmd:
+                self.b_branch_list.append(ttk.Button(self.frame_buttons1, text=i))
+                self.b_branch_list[len(self.b_branch_list)-1].pack(side="left",padx=(0,3))
+        else:
+            self.b_branch_update.pack_forget()
+            self.b_branch_colon.pack_forget()
+            for i in self.b_branch_list:
+                i.pack_forget()
+            self.b_branch_list=[]
+
+    def log(self):
+        pass
+        # 로그 창 만들어서 로그 띄우는 기능
+
+    def clone(self):
+        pass
+        # 클론누르면 창 띄워서 http어쩌구 또는 로컬 주소 받아서 클론해오기 하는거 만들기
 
     def quit(self):
         """Destroy dialog."""
