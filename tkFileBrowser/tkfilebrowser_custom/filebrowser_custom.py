@@ -276,6 +276,7 @@ class FileBrowser(tk.Toplevel):
         self.frame_buttons2.grid(row=4, sticky="ew", pady=3, padx=10)
         self.b_branch = ttk.Button(self.frame_buttons1, text="Branch",
                                        command=self.branch).pack(side="left",padx=(0,3))
+        self.b_branch_list=[]
         self.b_log = ttk.Button(self.frame_buttons1, text="Log",
                                        command=self.log).pack(side="left",padx=(0,3))
         self.b_clone = ttk.Button(self.frame_buttons1, text="Clone",
@@ -1767,10 +1768,8 @@ class FileBrowser(tk.Toplevel):
             print("Failed to rename file using git mv command. stderr:", e.stderr.decode())
 
     def branch(self):
-        # 브렌치 창 만들어서 브렌치 띄우는 기능, merge, create, delete 포함!!
+        #branch 버튼을 클릭하면 새 창 띄우고 깃의 모든 원격 브랜치 리스트 버튼 보여주기
         if self.is_git_repo():
-            self.b_branch_update.pack(side="left")
-            self.b_branch_colon.pack(side="left")
             cmd=subprocess.run(['git', 'branch' , '-r'], cwd=self._get_git_directory(), capture_output=True).stdout.decode().strip().split("\n")
             for i in range(len(cmd)):
                 if i>=len(cmd):
@@ -1778,14 +1777,21 @@ class FileBrowser(tk.Toplevel):
                 cmd[i].replace(" ", "")
                 if "->" in cmd[i]:
                     del cmd[i]
-            for i in cmd:
-                self.b_branch_list.append(ttk.Button(self.frame_buttons1, text=i))
-                self.b_branch_list[len(self.b_branch_list)-1].pack(side="left",padx=(0,3))
+            arrange=0
+            if i>0:
+                root = tk.Tk()
+                style = ttk.Style(root)
+                style.theme_use("clam")
+                print(root)
+                root.configure(bg=style.lookup('TFrame', 'background'))
+                for i in cmd:
+                    q,r=divmod(arrange,3)
+                    self.b_branch_list.append(ttk.Button(root, text=i).grid(row=q, column=r))
+                    self.b_branch_list[len(self.b_branch_list)-1]
+                    arrange += 1
+            else:
+                print("no branch")
         else:
-            self.b_branch_update.pack_forget()
-            self.b_branch_colon.pack_forget()
-            for i in self.b_branch_list:
-                i.pack_forget()
             self.b_branch_list=[]
 
     def log(self):
