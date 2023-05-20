@@ -1776,16 +1776,20 @@ class FileBrowser(tk.Toplevel):
                     break
                 cmd[i].replace(" ", "")
                 if "->" in cmd[i]:
-                    del cmd[i]
-            arrange=0
+                    headbr = cmd[i].split("->")
+                    cmd[i]=headbr[-1]
+            
             if i>0:
                 root = tk.Tk()
                 style = ttk.Style(root)
                 style.theme_use("clam")
                 print(root)
                 root.configure(bg=style.lookup('TFrame', 'background'))
+                
+                arrange=0
                 for i in cmd:
-                    q,r=divmod(arrange,3)
+                    print(i)
+                    q,r=divmod(arrange,5)
                     self.b_branch_list.append(ttk.Button(root, text=i).grid(row=q, column=r))
                     self.b_branch_list[len(self.b_branch_list)-1]
                     arrange += 1
