@@ -1790,7 +1790,7 @@ class FileBrowser(tk.Toplevel):
                 if "*" in cmdL[j]:
                     curbr = cmdL[j]
             
-            arrange=0
+            arrange=0   # 원격 브랜치 나타내기
             if i>0: # 원격 브랜치가 있을 때
                 root = tk.Tk()
                 style = ttk.Style(root)
@@ -1816,18 +1816,6 @@ class FileBrowser(tk.Toplevel):
                     self.b_branch_list[len(self.b_branch_list)-1]
                     arrange += 1
 
-                q,r=divmod(arrange,5)
-                ttk.Label(root, text="Local branch").grid(row=q+2, column=0, columnspan=5)
-                
-                arr=0
-                for j in cmdL:
-                    print(j)
-                    q,rd=divmod(arrange,5)
-                    qd,r=divmod(arr,5)
-                    self.b_branch_list.append(ttk.Button(root, text=j).grid(row=q+3, column=r))
-                    self.b_branch_list[len(self.b_branch_list)-1]
-                    arrange += 1
-                    arr += 1
                     
             else: # 원격 브랜치가 없을 때
                 root = tk.Tk()
@@ -1840,14 +1828,22 @@ class FileBrowser(tk.Toplevel):
                 ttk.Label(root, text="There is no remote branch yet.", foreground="blue").grid(row=1, column=0, columnspan=5)
                              
                 ttk.Label(root, text="Local branch").grid(row=2, column=0, columnspan=5)
+            
+
+            # 로컬 브랜치 나타내기
+            q,r=divmod(arrange,5)
+            ttk.Label(root, text="Local branch").grid(row=q+2, column=0, columnspan=5)
                 
-                arrange=0
-                for j in cmdL:
-                    print(j)
-                    q,r=divmod(arrange,5)
-                    self.b_branch_list.append(ttk.Button(root, text=j).grid(row=q+3, column=r))
-                    self.b_branch_list[len(self.b_branch_list)-1]
-                    arrange += 1
+            arr=0
+            for j in cmdL:
+                print(j)
+                q,rd=divmod(arrange,5)
+                qd,r=divmod(arr,5)
+                self.b_branch_list.append(ttk.Button(root, text=j).grid(row=q+3, column=r))
+                self.b_branch_list[len(self.b_branch_list)-1]
+                arrange += 1
+                arr += 1
+
         else:
             self.b_branch_list=[]
 
