@@ -1788,9 +1788,7 @@ class FileBrowser(tk.Toplevel):
                     break
                 cmdL[j].replace(" ", "")
                 if "*" in cmdL[j]:
-                    headbrL = cmdL[j].split("*")
-                    cmdL[j]=headbrL[-1]
-                    curbr=headbrL[-1]                
+                    curbr = cmdL[j]
             
             if i>0: # 원격 브랜치가 있을 때
                 root = tk.Tk()
