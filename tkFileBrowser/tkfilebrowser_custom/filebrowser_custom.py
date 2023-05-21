@@ -1790,6 +1790,7 @@ class FileBrowser(tk.Toplevel):
                 if "*" in cmdL[j]:
                     curbr = cmdL[j]
             
+            arrange=0
             if i>0: # 원격 브랜치가 있을 때
                 root = tk.Tk()
                 style = ttk.Style(root)
@@ -1799,11 +1800,19 @@ class FileBrowser(tk.Toplevel):
                 
                 ttk.Label(root, text="Remote branch").grid(row=0, column=0, columnspan=5)
 
-                arrange=0              
                 for i in cmd:
                     print(i)
                     q,r=divmod(arrange,5)
-                    self.b_branch_list.append(ttk.Button(root, text=i).grid(row=q+1, column=r))
+                    if i == headbr[-1]:     # 헤드가 가리키는 원격 브랜치 색 바꾸기
+                        style.configure("Custom.TButton", background="cyan")
+
+                        head_branch = ttk.Button(root, text=i, style="Custom.TButton")
+                        head_branch.grid(row=q+1, column=r)
+
+                        self.b_branch_list.append(head_branch)
+                    else:
+                        self.b_branch_list.append(ttk.Button(root, text=i).grid(row=q+1, column=r))
+                    
                     self.b_branch_list[len(self.b_branch_list)-1]
                     arrange += 1
 
