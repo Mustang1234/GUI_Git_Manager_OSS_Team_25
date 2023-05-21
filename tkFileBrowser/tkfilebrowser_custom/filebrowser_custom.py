@@ -1768,8 +1768,9 @@ class FileBrowser(tk.Toplevel):
             print("Failed to rename file using git mv command. stderr:", e.stderr.decode())
 
     def branch(self):
-        #branch 버튼을 클릭하면 새 창 띄우고 깃의 모든 원격 브랜치 리스트 버튼 보여주기
+        #branch 버튼을 클릭하면 새 창 띄우고 깃의 모든 원격 브랜치와 로컬 브랜치 리스트 버튼 보여주기
         if self.is_git_repo():
+            # 원격 브랜치
             cmd=subprocess.run(['git', 'branch' , '-r'], cwd=self._get_git_directory(), capture_output=True).stdout.decode().strip().split("\n")
             for i in range(len(cmd)):
                 if i>=len(cmd):
@@ -1779,22 +1780,67 @@ class FileBrowser(tk.Toplevel):
                     headbr = cmd[i].split("->")
                     cmd[i]=headbr[-1]
             
-            if i>0:
+            # 로컬 브랜치
+            cmdL=subprocess.run(['git', 'branch'], cwd=self._get_git_directory(), capture_output=True).stdout.decode().strip().split("\n")
+            curbr=""
+            for j in range(len(cmdL)):
+                if j>=len(cmdL):
+                    break
+                cmdL[j].replace(" ", "")
+                if "*" in cmdL[j]:
+                    headbrL = cmdL[j].split("*")
+                    cmdL[j]=headbrL[-1]
+                    curbr=headbrL[-1]                
+            
+            if i>0: # 원격 브랜치가 있을 때
                 root = tk.Tk()
                 style = ttk.Style(root)
                 style.theme_use("clam")
                 print(root)
                 root.configure(bg=style.lookup('TFrame', 'background'))
                 
-                arrange=0
+                ttk.Label(root, text="Remote branch").grid(row=0, column=0, columnspan=5)
+
+                arrange=0              
                 for i in cmd:
                     print(i)
                     q,r=divmod(arrange,5)
-                    self.b_branch_list.append(ttk.Button(root, text=i).grid(row=q, column=r))
+                    self.b_branch_list.append(ttk.Button(root, text=i).grid(row=q+1, column=r))
                     self.b_branch_list[len(self.b_branch_list)-1]
                     arrange += 1
-            else:
-                print("no branch")
+
+                q,r=divmod(arrange,5)
+                ttk.Label(root, text="Local branch").grid(row=q+2, column=0, columnspan=5)
+                
+                arr=0
+                for j in cmdL:
+                    print(j)
+                    q,rd=divmod(arrange,5)
+                    qd,r=divmod(arr,5)
+                    self.b_branch_list.append(ttk.Button(root, text=j).grid(row=q+3, column=r))
+                    self.b_branch_list[len(self.b_branch_list)-1]
+                    arrange += 1
+                    arr += 1
+                    
+            else: # 원격 브랜치가 없을 때
+                root = tk.Tk()
+                style = ttk.Style(root)
+                style.theme_use("clam")
+                print(root)
+                root.configure(bg=style.lookup('TFrame', 'background'))
+                
+                ttk.Label(root, text="Remote branch").grid(row=0, column=0, columnspan=5)
+                ttk.Label(root, text="There is no remote branch yet.", foreground="blue").grid(row=1, column=0, columnspan=5)
+                             
+                ttk.Label(root, text="Local branch").grid(row=2, column=0, columnspan=5)
+                
+                arrange=0
+                for j in cmdL:
+                    print(j)
+                    q,r=divmod(arrange,5)
+                    self.b_branch_list.append(ttk.Button(root, text=j).grid(row=q+3, column=r))
+                    self.b_branch_list[len(self.b_branch_list)-1]
+                    arrange += 1
         else:
             self.b_branch_list=[]
 
