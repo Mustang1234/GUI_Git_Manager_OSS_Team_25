@@ -1782,7 +1782,6 @@ class FileBrowser(tk.Toplevel):
             
             # 로컬 브랜치
             cmdL=subprocess.run(['git', 'branch'], cwd=self._get_git_directory(), capture_output=True).stdout.decode().strip().split("\n")
-            curbr=""
             for j in range(len(cmdL)):
                 if j>=len(cmdL):
                     break
@@ -1805,7 +1804,7 @@ class FileBrowser(tk.Toplevel):
                     print(i)
                     q,r=divmod(arrange,5)
                     if i == headbr[-1]:     # 헤드가 가리키는 원격 브랜치 색 바꾸기
-                        style.configure("Custom.TButton", background="cyan")
+                        style.configure("Custom.TButton", foreground="red")
 
                         head_remote = ttk.Button(root, text=i, style="Custom.TButton")
                         head_remote.grid(row=q+1, column=r)
@@ -1840,10 +1839,8 @@ class FileBrowser(tk.Toplevel):
                 print(j)
                 q,rd=divmod(arrange,5)
                 qd,r=divmod(arr,5)
-                print(curbr)
-                print("lllllllllllllllllllllllllllllllllllllllllll")
                 if j == curbr :
-                    style.configure("Custom.TButton", background="cyan")
+                    style.configure("Custom.TButton", foreground="red")
 
                     head_local = ttk.Button(root, text=j, style="Custom.TButton")
                     head_local.grid(row=q+3, column=r)
