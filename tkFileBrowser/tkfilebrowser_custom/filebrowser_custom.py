@@ -1788,6 +1788,7 @@ class FileBrowser(tk.Toplevel):
                     break
                 cmdL[j].replace(" ", "")
                 if "*" in cmdL[j]:
+                    cmdL[j] = cmdL[j].replace("*", "")
                     curbr = cmdL[j]
             
             arrange=0   # 원격 브랜치 나타내기
@@ -1806,10 +1807,10 @@ class FileBrowser(tk.Toplevel):
                     if i == headbr[-1]:     # 헤드가 가리키는 원격 브랜치 색 바꾸기
                         style.configure("Custom.TButton", background="cyan")
 
-                        head_branch = ttk.Button(root, text=i, style="Custom.TButton")
-                        head_branch.grid(row=q+1, column=r)
+                        head_remote = ttk.Button(root, text=i, style="Custom.TButton")
+                        head_remote.grid(row=q+1, column=r)
 
-                        self.b_branch_list.append(head_branch)
+                        self.b_branch_list.append(head_remote)
                     else:
                         self.b_branch_list.append(ttk.Button(root, text=i).grid(row=q+1, column=r))
                     
@@ -1839,7 +1840,18 @@ class FileBrowser(tk.Toplevel):
                 print(j)
                 q,rd=divmod(arrange,5)
                 qd,r=divmod(arr,5)
-                self.b_branch_list.append(ttk.Button(root, text=j).grid(row=q+3, column=r))
+                print(curbr)
+                print("lllllllllllllllllllllllllllllllllllllllllll")
+                if j == curbr :
+                    style.configure("Custom.TButton", background="cyan")
+
+                    head_local = ttk.Button(root, text=j, style="Custom.TButton")
+                    head_local.grid(row=q+3, column=r)
+
+                    self.b_branch_list.append(head_local)
+                else:
+                    self.b_branch_list.append(ttk.Button(root, text=j).grid(row=q+3, column=r))
+
                 self.b_branch_list[len(self.b_branch_list)-1]
                 arrange += 1
                 arr += 1
