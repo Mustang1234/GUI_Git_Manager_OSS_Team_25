@@ -1858,7 +1858,14 @@ class FileBrowser(tk.Toplevel):
 
 
     def create_branch(self):
-        print("create branch")
+        dir = self.getdir()
+        
+        if self.is_git_repo():
+            branch_name=tk.simpledialog.askstring("Create Branch", "Enter the new branch name:")
+            subprocess.run(['git', 'branch', branch_name], cwd=dir)
+
+        else:
+            print("fatal: not a git repository (or any of the parent directories): .git")
 
 
 
