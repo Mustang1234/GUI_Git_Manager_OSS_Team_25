@@ -1885,7 +1885,6 @@ class FileBrowser(tk.Toplevel):
             subprocess.run(['git', 'branch', '-d', branch_name], cwd=dir)
             
     def delete_branch(self):
-
         #branch 버튼을 클릭하면 새 창 띄우고 깃의 모든 원격 브랜치와 로컬 브랜치 리스트 버튼 보여주기
         if self.is_git_repo():
             # 원격 브랜치
@@ -1927,12 +1926,12 @@ class FileBrowser(tk.Toplevel):
                     if i == headbr[-1]:     # 헤드가 가리키는 원격 브랜치 색 바꾸기
                         style.configure("Custom.TButton", foreground="red")
 
-                        head_remote = ttk.Button(root, text=i, command=lambda: self.clicked_to_delete(j), style="Custom.TButton")
+                        head_remote = ttk.Button(root, text=i, command=lambda id=i: self.clicked_to_delete(id), style="Custom.TButton")
                         head_remote.grid(row=q+3, column=r)
 
                         self.b_branch_list.append(head_remote)
                     else:
-                        self.b_branch_list.append(ttk.Button(root, text=i, command=lambda: self.clicked_to_delete(j)).grid(row=q+3, column=r))
+                        self.b_branch_list.append(ttk.Button(root, text=i, command=lambda id=i: self.clicked_to_delete(id)).grid(row=q+3, column=r))
                     
                     self.b_branch_list[len(self.b_branch_list)-1]
                     arrange += 1
@@ -1957,12 +1956,12 @@ class FileBrowser(tk.Toplevel):
                 if j == curbr :
                     style.configure("Custom.TButton", foreground="red")
 
-                    head_local = ttk.Button(root, text=j, command=lambda: self.clicked_to_delete(j), style="Custom.TButton")
+                    head_local = ttk.Button(root, text=j, command=lambda id=j: self.clicked_to_delete(id), style="Custom.TButton")
                     head_local.grid(row=q+6, column=r)
 
                     self.b_branch_list.append(head_local)
                 else:
-                    self.b_branch_list.append(ttk.Button(root, text=j, command=lambda: self.clicked_to_delete(j)).grid(row=q+6, column=r))
+                    self.b_branch_list.append(ttk.Button(root, text=j, command=lambda id=j: self.clicked_to_delete(id)).grid(row=q+6, column=r))
 
                 self.b_branch_list[len(self.b_branch_list)-1]
                 arrange += 1
@@ -2022,12 +2021,12 @@ class FileBrowser(tk.Toplevel):
                     if i == headbr[-1]:     # 헤드가 가리키는 원격 브랜치 색 바꾸기
                         style.configure("Custom.TButton", foreground="red")
 
-                        head_remote = ttk.Button(root, text=i, command=lambda: self.clicked_to_rename(j,curbr), style="Custom.TButton")
+                        head_remote = ttk.Button(root, text=i, command=lambda id=i: self.clicked_to_rename(id,curbr), style="Custom.TButton")
                         head_remote.grid(row=q+3, column=r)
 
                         self.b_branch_list.append(head_remote)
                     else:
-                        self.b_branch_list.append(ttk.Button(root, text=i, command=lambda: self.clicked_to_rename(j,curbr)).grid(row=q+3, column=r))
+                        self.b_branch_list.append(ttk.Button(root, text=i, command=lambda id=i: self.clicked_to_rename(id,curbr)).grid(row=q+3, column=r))
                     
                     self.b_branch_list[len(self.b_branch_list)-1]
                     arrange += 1
@@ -2045,19 +2044,21 @@ class FileBrowser(tk.Toplevel):
             ttk.Label(root, text="[Local branch]").grid(row=q+5, column=0, columnspan=5)
                 
             arr=0
-            for j in cmdL:
+            button_num=1
+            for n, j in enumerate(cmdL):
+            #for j in cmdL:
                 print(j)
                 q,rd=divmod(arrange,5)
                 qd,r=divmod(arr,5)
                 if j == curbr :
                     style.configure("Custom.TButton", foreground="red")
 
-                    head_local = ttk.Button(root, text=j, command=lambda: self.clicked_to_rename(j,curbr), style="Custom.TButton")
+                    head_local = ttk.Button(root, text=j, command=lambda id=j: self.clicked_to_rename(id,curbr), style="Custom.TButton")
                     head_local.grid(row=q+6, column=r)
 
                     self.b_branch_list.append(head_local)
                 else:
-                    self.b_branch_list.append(ttk.Button(root, text=j, command=lambda: self.clicked_to_rename(j,curbr)).grid(row=q+6, column=r))
+                    self.b_branch_list.append(ttk.Button(root, text=j, command=lambda id=j: self.clicked_to_rename(id,curbr)).grid(row=q+6, column=r))
 
                 self.b_branch_list[len(self.b_branch_list)-1]
                 arrange += 1
