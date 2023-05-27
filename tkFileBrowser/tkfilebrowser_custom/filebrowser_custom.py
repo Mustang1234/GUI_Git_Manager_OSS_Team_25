@@ -1779,7 +1779,8 @@ class FileBrowser(tk.Toplevel):
                 cmd[i]=cmd[i].replace(" ", "")
                 if "->" in cmd[i]:
                     headbr = cmd[i].split("->")
-                    cmd[i]=headbr[-1]
+                    del cmd[i]
+                    #headbr[-1]에 헤드가 가리키는 브랜치가 있다.
             
             # 로컬 브랜치
             cmdL=subprocess.run(['git', 'branch'], cwd=self._get_git_directory(), capture_output=True).stdout.decode().strip().split("\n")
@@ -1900,7 +1901,8 @@ class FileBrowser(tk.Toplevel):
                 cmd[i]=cmd[i].replace(" ", "")
                 if "->" in cmd[i]:
                     headbr = cmd[i].split("->")
-                    cmd[i]=headbr[-1]
+                    del cmd[i]
+                    #headbr[-1]에 헤드가 가리키는 브랜치가 있다.
             
             # 로컬 브랜치
             cmdL=subprocess.run(['git', 'branch'], cwd=self._get_git_directory(), capture_output=True).stdout.decode().strip().split("\n")
@@ -1995,7 +1997,8 @@ class FileBrowser(tk.Toplevel):
                 cmd[i]=cmd[i].replace(" ", "")
                 if "->" in cmd[i]:
                     headbr = cmd[i].split("->")
-                    cmd[i]=headbr[-1]
+                    del cmd[i]
+                    #headbr[-1]에 헤드가 가리키는 브랜치가 있다.
             
             # 로컬 브랜치
             cmdL=subprocess.run(['git', 'branch'], cwd=self._get_git_directory(), capture_output=True).stdout.decode().strip().split("\n")
@@ -2100,7 +2103,8 @@ class FileBrowser(tk.Toplevel):
                 cmd[i]=cmd[i].replace(" ", "")
                 if "->" in cmd[i]:
                     headbr = cmd[i].split("->")
-                    cmd[i]=headbr[-1]
+                    del cmd[i]
+                    #headbr[-1]에 헤드가 가리키는 브랜치가 있다.
             
             # 로컬 브랜치
             cmdL=subprocess.run(['git', 'branch'], cwd=self._get_git_directory(), capture_output=True).stdout.decode().strip().split("\n")
