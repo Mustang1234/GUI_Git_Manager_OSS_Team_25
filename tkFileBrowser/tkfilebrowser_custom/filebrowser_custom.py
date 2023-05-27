@@ -1776,7 +1776,7 @@ class FileBrowser(tk.Toplevel):
             for i in range(len(cmd)):
                 if i>=len(cmd):
                     break
-                cmd[i].replace(" ", "")
+                cmd[i]=cmd[i].replace(" ", "")
                 if "->" in cmd[i]:
                     headbr = cmd[i].split("->")
                     cmd[i]=headbr[-1]
@@ -1786,7 +1786,7 @@ class FileBrowser(tk.Toplevel):
             for j in range(len(cmdL)):
                 if j>=len(cmdL):
                     break
-                cmdL[j].replace(" ", "")
+                cmdL[j]=cmdL[j].replace(" ", "")
                 if "*" in cmdL[j]:
                     cmdL[j] = cmdL[j].replace("*", "")
                     curbr = cmdL[j]
@@ -1853,6 +1853,8 @@ class FileBrowser(tk.Toplevel):
             ttk.Label(root, text="Git Branch Function").grid(columnspan=5)
             ttk.Button(root, text="Create Branch", command=self.create_branch).grid(column=0)
 
+            #ttk.Button(root, text="Checkout Branch", command=self.checkout_branch).grid(column=2)
+
         else:
             self.b_branch_list=[]
 
@@ -1861,9 +1863,17 @@ class FileBrowser(tk.Toplevel):
         dir = self.getdir()
         
         if self.is_git_repo():
-            branch_name=tk.simpledialog.askstring("Create Branch", "Enter the new branch name:")
-            subprocess.run(['git', 'branch', branch_name], cwd=dir)
+            branch_name=tk.simpledialog.askstring("Create Branch", "Enter the new branch name: ")
 
+            if branch_name: # 브랜치 이름 작성하고 "OK" 버튼이 눌렀을 때
+                result=subprocess.run(['git', 'branch', branch_name], cwd=dir)
+                if result.returncode != 0:
+                    
+                    if any(char.isspace() for char in branch_name):
+                        messagebox.showerror("Error", "'{branch_name}' is not a valid branch name.")
+                    # 중복일 경우 에러메세지 처리
+                    else:
+                        messagebox.showerror("Error", "Failed to create branch.")
         else:
             print("fatal: not a git repository (or any of the parent directories): .git")
 
