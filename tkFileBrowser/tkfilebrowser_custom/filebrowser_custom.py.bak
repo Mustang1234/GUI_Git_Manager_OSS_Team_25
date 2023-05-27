@@ -1863,17 +1863,9 @@ class FileBrowser(tk.Toplevel):
         dir = self.getdir()
         
         if self.is_git_repo():
-            branch_name=tk.simpledialog.askstring("Create Branch", "Enter the new branch name: ")
+            branch_name=tk.simpledialog.askstring("Create Branch", "Enter the new branch name:")
+            subprocess.run(['git', 'branch', branch_name], cwd=dir)
 
-            if branch_name: # 브랜치 이름 작성하고 "OK" 버튼이 눌렀을 때
-                result=subprocess.run(['git', 'branch', branch_name], cwd=dir)
-                if result.returncode != 0:
-                    
-                    if any(char.isspace() for char in branch_name): # 브랜치 이름이 공백 포함일 경우
-                        messagebox.showerror("Error", "'{branch_name}' is not a valid branch name.")
-                    # 중복일 경우 에러메세지 처리
-                    else:
-                        messagebox.showerror("Error", "Failed to create branch.")
         else:
             print("fatal: not a git repository (or any of the parent directories): .git")
     
