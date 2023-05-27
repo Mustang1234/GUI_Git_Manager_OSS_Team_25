@@ -1866,15 +1866,17 @@ class FileBrowser(tk.Toplevel):
         if self.is_git_repo():
             branch_name=tk.simpledialog.askstring("Create Branch", "Enter the new branch name: ")
 
-            if branch_name: # 브랜치 이름 작성하고 "OK" 버튼이 눌렀을 때
-                result=subprocess.run(['git', 'branch', branch_name], cwd=dir)
-                if result.returncode != 0:
-                    
-                    if any(char.isspace() for char in branch_name): # 브랜치 이름이 공백 포함일 경우
-                        messagebox.showerror("Error", "'{branch_name}' is not a valid branch name.")
-                    # 중복일 경우 에러메세지 처리
-                    else:
-                        messagebox.showerror("Error", "Failed to create branch.")
+            try:
+                result = subprocess.run(['git', 'branch', branch_name], cwd=dir, stderr=subprocess.PIPE)
+                result.check_returncode()  # 오류확인
+
+            except subprocess.CalledProcessError as e:
+                # 오류가 발생한 경우 오류 메시지창 띄우기
+                if e.stderr:
+                    error_message = e.stderr.strip()
+                    messagebox.showerror("Error", error_message)
+                else:
+                    print(str(e))
         else:
             print("fatal: not a git repository (or any of the parent directories): .git")
     
@@ -2069,12 +2071,23 @@ class FileBrowser(tk.Toplevel):
         
         if self.is_git_repo():
             branch_name=tk.simpledialog.askstring("Checkout Branch", "Enter the checkout branch name:")
-            if branch_name: # 브랜치 이름 작성하고 "OK" 버튼이 눌렀을 때
-                result = subprocess.run(['git', 'checkout', branch_name], cwd=dir)
-                if result.returncode != 0:
-                    
-                    messagebox.showerror("Error", "Failed to checkout branch.")
+            if branch_name and branch_name.strip(): # 브랜치 이름 작성하고 "OK" 버튼이 눌렀을 때
+                
+                try:
+                    result = subprocess.run(['git', 'checkout', branch_name], cwd=dir, stderr=subprocess.PIPE)
+                    result.check_returncode()  # 오류확인
 
+                except subprocess.CalledProcessError as e:
+                    # 오류가 발생한 경우 오류 메시지창 띄우기
+                    if e.stderr:
+                        error_message = e.stderr.strip()
+                        messagebox.showerror("Error", error_message)
+                    else:
+                        print(str(e))
+            elif branch_name is not None: # "OK" 버튼이 눌렸을 때 메시지가 빈 문자열인 경우
+                messagebox.showerror("Error", "Branch name cannot be empty.")
+            elif branch_name is None: #"Cancel" 버튼 눌렀을 때
+                pass   
         else:
             print("fatal: not a git repository (or any of the parent directories): .git")
 
