@@ -1768,6 +1768,7 @@ class FileBrowser(tk.Toplevel):
             print("Failed to rename file using git mv command. stderr:", e.stderr.decode())
 
     def branch(self):
+
         #branch 버튼을 클릭하면 새 창 띄우고 깃의 모든 원격 브랜치와 로컬 브랜치 리스트 버튼 보여주기
         if self.is_git_repo():
             # 원격 브랜치
@@ -1790,15 +1791,17 @@ class FileBrowser(tk.Toplevel):
                     cmdL[j] = cmdL[j].replace("*", "")
                     curbr = cmdL[j]
             
+            # 브랜치 새 창 띄우기
+            root = tk.Tk()
+            style = ttk.Style(root)
+            style.theme_use("clam")
+            print(root)
+            root.configure(bg=style.lookup('TFrame', 'background'))
+            
+            ttk.Label(root, text="Remote branch").grid(row=0, column=0, columnspan=5)
+
             arrange=0   # 원격 브랜치 나타내기
             if i>0: # 원격 브랜치가 있을 때
-                root = tk.Tk()
-                style = ttk.Style(root)
-                style.theme_use("clam")
-                print(root)
-                root.configure(bg=style.lookup('TFrame', 'background'))
-                
-                ttk.Label(root, text="Remote branch").grid(row=0, column=0, columnspan=5)
 
                 for i in cmd:
                     print(i)
@@ -1818,13 +1821,6 @@ class FileBrowser(tk.Toplevel):
 
                     
             else: # 원격 브랜치가 없을 때
-                root = tk.Tk()
-                style = ttk.Style(root)
-                style.theme_use("clam")
-                print(root)
-                root.configure(bg=style.lookup('TFrame', 'background'))
-                
-                ttk.Label(root, text="Remote branch").grid(row=0, column=0, columnspan=5)
                 ttk.Label(root, text="There is no remote branch yet.", foreground="blue").grid(row=1, column=0, columnspan=5)
                              
                 ttk.Label(root, text="Local branch").grid(row=2, column=0, columnspan=5)
@@ -1853,8 +1849,18 @@ class FileBrowser(tk.Toplevel):
                 arrange += 1
                 arr += 1
 
+            # 브랜치 기능 버튼
+            ttk.Label(root, text="Git Branch Function").grid(columnspan=5)
+            ttk.Button(root, text="Create Branch", command=self.create_branch).grid(column=0)
+
         else:
             self.b_branch_list=[]
+
+
+    def create_branch(self):
+        print("create branch")
+
+
 
     def log(self):
         pass
