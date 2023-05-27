@@ -2067,30 +2067,110 @@ class FileBrowser(tk.Toplevel):
         else:
             self.b_branch_list=[]
 
-    def checkout_branch(self):
+    def clicked_to_checkout(self, branch_name):
         dir = self.getdir()
-        
-        if self.is_git_repo():
-            branch_name=tk.simpledialog.askstring("Checkout Branch", "Enter the checkout branch name:")
-            if branch_name and branch_name.strip(): # 브랜치 이름 작성하고 "OK" 버튼이 눌렀을 때
-                
-                try:
-                    result = subprocess.run(['git', 'checkout', branch_name], cwd=dir, stderr=subprocess.PIPE)
-                    result.check_returncode()  # 오류확인
 
-                except subprocess.CalledProcessError as e:
-                    # 오류가 발생한 경우 오류 메시지창 띄우기
-                    if e.stderr:
-                        error_message = e.stderr.strip()
-                        messagebox.showerror("Error", error_message)
+        try:
+            result = subprocess.run(['git', 'checkout', branch_name], cwd=dir, stderr=subprocess.PIPE)
+            result.check_returncode()  # 오류확인
+            
+        except subprocess.CalledProcessError as e:
+            # 오류가 발생한 경우 오류 메시지창 띄우기
+            if e.stderr:
+                error_message = e.stderr.strip()
+                messagebox.showerror("Error", error_message)
+            else:
+                print(str(e))
+
+
+    def checkout_branch(self):
+        
+        #branch 버튼을 클릭하면 새 창 띄우고 깃의 모든 원격 브랜치와 로컬 브랜치 리스트 버튼 보여주기
+        if self.is_git_repo():
+            # 원격 브랜치
+            cmd=subprocess.run(['git', 'branch' , '-r'], cwd=self._get_git_directory(), capture_output=True).stdout.decode().strip().split("\n")
+            for i in range(len(cmd)):
+                if i>=len(cmd):
+                    break
+                cmd[i]=cmd[i].replace(" ", "")
+                if "->" in cmd[i]:
+                    headbr = cmd[i].split("->")
+                    cmd[i]=headbr[-1]
+            
+            # 로컬 브랜치
+            cmdL=subprocess.run(['git', 'branch'], cwd=self._get_git_directory(), capture_output=True).stdout.decode().strip().split("\n")
+            for j in range(len(cmdL)):
+                if j>=len(cmdL):
+                    break
+                cmdL[j]=cmdL[j].replace(" ", "")
+                if "*" in cmdL[j]:
+                    cmdL[j] = cmdL[j].replace("*", "")
+                    curbr = cmdL[j]
+            
+            # 브랜치 새 창 띄우기
+            root = tk.Tk()
+            style = ttk.Style(root)
+            style.theme_use("clam")
+            print(root)
+            root.configure(bg=style.lookup('TFrame', 'background'))
+            ttk.Label(root, text="Select one branch you want to delete").grid(row=0, column=0, columnspan=5)
+            ttk.Label(root, text=" ").grid(row=1, column=0, columnspan=5)
+            ttk.Label(root, text="[Remote branch]").grid(row=2, column=0, columnspan=5)
+
+            arrange=0   # 원격 브랜치 나타내기
+            if i>0: # 원격 브랜치가 있을 때
+
+                for i in cmd:
+                    print(i)
+                    q,r=divmod(arrange,5)
+                    if i == headbr[-1]:     # 헤드가 가리키는 원격 브랜치 색 바꾸기
+                        style.configure("Custom.TButton", foreground="red")
+
+                        head_remote = ttk.Button(root, text=i, command=lambda id=i: self.clicked_to_checkout(id), style="Custom.TButton")
+                        head_remote.grid(row=q+3, column=r)
+
+                        self.b_branch_list.append(head_remote)
                     else:
-                        print(str(e))
-            elif branch_name is not None: # "OK" 버튼이 눌렸을 때 메시지가 빈 문자열인 경우
-                messagebox.showerror("Error", "Branch name cannot be empty.")
-            elif branch_name is None: #"Cancel" 버튼 눌렀을 때
-                pass   
+                        self.b_branch_list.append(ttk.Button(root, text=i, command=lambda id=i: self.clicked_to_checkout(id)).grid(row=q+3, column=r))
+                    
+                    self.b_branch_list[len(self.b_branch_list)-1]
+                    arrange += 1
+
+                    
+            else: # 원격 브랜치가 없을 때
+                ttk.Label(root, text="There is no remote branch yet.", foreground="blue").grid(row=3, column=0, columnspan=5)
+                ttk.Label(root, text=" ").grid(row=4, column=0, columnspan=5)          
+                ttk.Label(root, text="[Local branch]").grid(row=5, column=0, columnspan=5)
+            
+
+            # 로컬 브랜치 나타내기
+            q,r=divmod(arrange,5)
+            ttk.Label(root, text=" ").grid(row=q+4, column=0, columnspan=5)
+            ttk.Label(root, text="[Local branch]").grid(row=q+5, column=0, columnspan=5)
+                
+            arr=0
+            for j in cmdL:
+                print(j)
+                q,rd=divmod(arrange,5)
+                qd,r=divmod(arr,5)
+                if j == curbr :
+                    style.configure("Custom.TButton", foreground="red")
+
+                    head_local = ttk.Button(root, text=j, command=lambda id=j: self.clicked_to_checkout(id), style="Custom.TButton")
+                    head_local.grid(row=q+6, column=r)
+
+                    self.b_branch_list.append(head_local)
+                else:
+                    self.b_branch_list.append(ttk.Button(root, text=j, command=lambda id=j: self.clicked_to_checkout(id)).grid(row=q+6, column=r))
+
+                self.b_branch_list[len(self.b_branch_list)-1]
+                arrange += 1
+                arr += 1
+            
         else:
-            print("fatal: not a git repository (or any of the parent directories): .git")
+            self.b_branch_list=[]
+
+
 
     def log(self):
         pass
