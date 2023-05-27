@@ -1854,6 +1854,7 @@ class FileBrowser(tk.Toplevel):
             ttk.Button(root, text="Create Branch", command=self.create_branch).grid(column=0)
             ttk.Button(root, text="Delete Branch", command=self.delete_branch).grid(column=0)
             ttk.Button(root, text="Rename Branch", command=self.rename_branch).grid(column=0)
+            ttk.Button(root, text="Checkout Branch", command=self.checkout_branch).grid(column=0)
             
         else:
             self.b_branch_list=[]
@@ -2062,7 +2063,21 @@ class FileBrowser(tk.Toplevel):
             
         else:
             self.b_branch_list=[]
-    
+
+    def checkout_branch(self):
+        dir = self.getdir()
+        
+        if self.is_git_repo():
+            branch_name=tk.simpledialog.askstring("Checkout Branch", "Enter the checkout branch name:")
+            if branch_name: # 브랜치 이름 작성하고 "OK" 버튼이 눌렀을 때
+                result = subprocess.run(['git', 'checkout', branch_name], cwd=dir)
+                if result.returncode != 0:
+                    
+                    messagebox.showerror("Error", "Failed to checkout branch.")
+
+        else:
+            print("fatal: not a git repository (or any of the parent directories): .git")
+
     def log(self):
         pass
         # 로그 창 만들어서 로그 띄우는 기능
