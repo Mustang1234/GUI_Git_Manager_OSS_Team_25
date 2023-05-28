@@ -1990,8 +1990,21 @@ class FileBrowser(tk.Toplevel):
             dir=self.getdir()
             
             new_branch_name=tk.simpledialog.askstring("Rename Branch", "Enter the new branch name for rename the branch:")
-            subprocess.run(['git', 'branch', '-m', old_branch_name, new_branch_name], cwd=dir)
-             
+            if new_branch_name and new_branch_name.strip(): # rename할 브랜치 이름 작성하고 "OK" 버튼이 눌렀을 때
+                try:
+                    result = subprocess.run(['git', 'branch', '-m', old_branch_name, new_branch_name], cwd=dir, stderr=subprocess.PIPE)
+                    result.check_returncode()  
+                except subprocess.CalledProcessError as e:
+                    if e.stderr:
+                        error_message = e.stderr.strip()
+                        messagebox.showerror("Error", error_message)
+                    else:
+                        print(str(e))
+            elif new_branch_name is not None: # "OK" 버튼이 눌렸을 때 메시지가 빈 문자열인 경우
+                messagebox.showerror("Error", "Branch name cannot be empty.")
+            elif new_branch_name is None: # "Cancel" 버튼 눌렀을 때
+                pass            
+                        
     def rename_branch(self):
         #branch 버튼을 클릭하면 새 창 띄우고 깃의 모든 원격 브랜치와 로컬 브랜치 리스트 버튼 보여주기
         if self.is_git_repo():
