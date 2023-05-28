@@ -1809,7 +1809,9 @@ class FileBrowser(tk.Toplevel):
                     curbr = cmdL[j]
             
             return cmd, cmdL, i, j, headbr, curbr   
-        
+    
+    #def show_branch_list(self):
+            
     def create_branch(self):
         dir = self.getdir()
         
@@ -1981,8 +1983,7 @@ class FileBrowser(tk.Toplevel):
                 
             arr=0
             button_num=1
-            for n, j in enumerate(cmdL):
-            #for j in cmdL:
+            for j in cmdL:
                 print(j)
                 q,rd=divmod(arrange,5)
                 qd,r=divmod(arr,5)
