@@ -1888,7 +1888,16 @@ class FileBrowser(tk.Toplevel):
     
     def clicked_to_delete(self, branch_name):
             dir=self.getdir()
-            subprocess.run(['git', 'branch', '-d', branch_name], cwd=dir)
+            try:
+                result = subprocess.run(['git', 'branch', '-d', branch_name], cwd=dir, stderr=subprocess.PIPE)
+                result.check_returncode()  
+            
+            except subprocess.CalledProcessError as e:
+                if e.stderr:
+                    error_message = e.stderr.strip()
+                    messagebox.showerror("Error", error_message)
+                else:
+                    print(str(e))
             
     def delete_branch(self):
         #branch 버튼을 클릭하면 새 창 띄우고 깃의 모든 원격 브랜치와 로컬 브랜치 리스트 버튼 보여주기
@@ -1920,7 +1929,7 @@ class FileBrowser(tk.Toplevel):
             style.theme_use("clam")
             print(root)
             root.configure(bg=style.lookup('TFrame', 'background'))
-            ttk.Label(root, text="Select one branch you want to delete").grid(row=0, column=0, columnspan=5)
+            ttk.Label(root, text="Select one branch you want to delete.").grid(row=0, column=0, columnspan=5)
             ttk.Label(root, text=" ").grid(row=1, column=0, columnspan=5)
             ttk.Label(root, text="[Remote branch]").grid(row=2, column=0, columnspan=5)
 
@@ -2016,7 +2025,7 @@ class FileBrowser(tk.Toplevel):
             style.theme_use("clam")
             print(root)
             root.configure(bg=style.lookup('TFrame', 'background'))
-            ttk.Label(root, text="Select one branch you want to rename").grid(row=0, column=0, columnspan=5)
+            ttk.Label(root, text="Select one branch you want to rename.").grid(row=0, column=0, columnspan=5)
             ttk.Label(root, text=" ").grid(row=1, column=0, columnspan=5)
             ttk.Label(root, text="[Remote branch]").grid(row=2, column=0, columnspan=5)
 
