@@ -1986,14 +1986,11 @@ class FileBrowser(tk.Toplevel):
         else:
             self.b_branch_list=[]
 
-    def clicked_to_rename(self, branch_name, cur_branch):
+    def clicked_to_rename(self, old_branch_name):
             dir=self.getdir()
-            subprocess.run(['git', 'checkout', branch_name], cwd=dir) # rename 할 브랜치로 이동 (master or main으로 이동하는걸로 수정해도 ok)
+            
             new_branch_name=tk.simpledialog.askstring("Rename Branch", "Enter the new branch name for rename the branch:")
-            subprocess.run(['git', 'branch', '-m', new_branch_name], cwd=dir) # rename
-            # 만약 rename버튼을 클릭할 때의 브랜치(head가 가르키는 브랜치)가 rename할 브랜치와 다른 브랜치라면 다시 원래 브랜치로 돌아가기
-            if cur_branch!=branch_name:
-                subprocess.run(['git', 'checkout', cur_branch], cwd=dir)
+            subprocess.run(['git', 'branch', '-m', old_branch_name, new_branch_name], cwd=dir)
              
     def rename_branch(self):
         #branch 버튼을 클릭하면 새 창 띄우고 깃의 모든 원격 브랜치와 로컬 브랜치 리스트 버튼 보여주기
@@ -2038,12 +2035,12 @@ class FileBrowser(tk.Toplevel):
                     if i == headbr[-1]:     # 헤드가 가리키는 원격 브랜치 색 바꾸기
                         style.configure("Custom.TButton", foreground="red")
 
-                        head_remote = ttk.Button(root, text=i, command=lambda id=i: self.clicked_to_rename(id,curbr), style="Custom.TButton")
+                        head_remote = ttk.Button(root, text=i, command=lambda id=i: self.clicked_to_rename(id), style="Custom.TButton")
                         head_remote.grid(row=q+3, column=r)
 
                         self.b_branch_list.append(head_remote)
                     else:
-                        self.b_branch_list.append(ttk.Button(root, text=i, command=lambda id=i: self.clicked_to_rename(id,curbr)).grid(row=q+3, column=r))
+                        self.b_branch_list.append(ttk.Button(root, text=i, command=lambda id=i: self.clicked_to_rename(id)).grid(row=q+3, column=r))
                     
                     self.b_branch_list[len(self.b_branch_list)-1]
                     arrange += 1
@@ -2070,12 +2067,12 @@ class FileBrowser(tk.Toplevel):
                 if j == curbr :
                     style.configure("Custom.TButton", foreground="red")
 
-                    head_local = ttk.Button(root, text=j, command=lambda id=j: self.clicked_to_rename(id,curbr), style="Custom.TButton")
+                    head_local = ttk.Button(root, text=j, command=lambda id=j: self.clicked_to_rename(id), style="Custom.TButton")
                     head_local.grid(row=q+6, column=r)
 
                     self.b_branch_list.append(head_local)
                 else:
-                    self.b_branch_list.append(ttk.Button(root, text=j, command=lambda id=j: self.clicked_to_rename(id,curbr)).grid(row=q+6, column=r))
+                    self.b_branch_list.append(ttk.Button(root, text=j, command=lambda id=j: self.clicked_to_rename(id)).grid(row=q+6, column=r))
 
                 self.b_branch_list[len(self.b_branch_list)-1]
                 arrange += 1
