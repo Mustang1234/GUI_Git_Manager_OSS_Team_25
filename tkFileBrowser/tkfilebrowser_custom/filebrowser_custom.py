@@ -2091,7 +2091,25 @@ class FileBrowser(tk.Toplevel):
             self.b_branch_list=[]
         
     def clicked_to_merge(self, branch_name):
-        pass
+        dir = self.getdir()
+
+        try:
+            result = subprocess.run(['git', 'merge', branch_name], cwd=dir, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            result.check_returncode()  # 오류확인
+
+
+            # merge가 정상적으로 수행되었을 때 git 메시지 출력
+            if result.returncode == 0:
+                git_message = result.stdout.strip().decode('utf-8')
+                messagebox.showinfo("Git Merge Message", git_message)
+            
+        except subprocess.CalledProcessError as e:
+            # 오류가 발생한 경우 오류 메시지창 띄우기
+            if e.stderr:
+                error_message = e.stderr.strip()
+                messagebox.showerror("Error", error_message)
+            else:
+                print(str(e))
 
 
     def merge_branch(self):
