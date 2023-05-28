@@ -1768,10 +1768,26 @@ class FileBrowser(tk.Toplevel):
             print("Failed to rename file using git mv command. stderr:", e.stderr.decode())
 
     def branch(self):
-
         #branch 버튼을 클릭하면 새 창 띄우고 깃의 모든 원격 브랜치와 로컬 브랜치 리스트 버튼 보여주기
         if self.is_git_repo():
+            # 브랜치 새 창 띄우기
+            root = tk.Tk()
+            style = ttk.Style(root)
+            style.theme_use("clam")
+            print(root)
+            root.configure(bg=style.lookup('TFrame', 'background'))
+
+            # 브랜치 기능 버튼
+            ttk.Label(root, text="Git Branch Function").grid(columnspan=5)
+            ttk.Button(root, text="Create Branch", command=self.create_branch).grid(column=0)
+            ttk.Button(root, text="Delete Branch", command=self.delete_branch).grid(column=0)
+            ttk.Button(root, text="Rename Branch", command=self.rename_branch).grid(column=0)
+            ttk.Button(root, text="Checkout Branch", command=self.checkout_branch).grid(column=0)
+            
+    def return_branch_list(self):
+        if self.is_git_repo():
             # 원격 브랜치
+            headbr = None
             cmd=subprocess.run(['git', 'branch' , '-r'], cwd=self._get_git_directory(), capture_output=True).stdout.decode().strip().split("\n")
             for i in range(len(cmd)):
                 if i>=len(cmd):
@@ -1792,75 +1808,8 @@ class FileBrowser(tk.Toplevel):
                     cmdL[j] = cmdL[j].replace("*", "")
                     curbr = cmdL[j]
             
-            # 브랜치 새 창 띄우기
-            root = tk.Tk()
-            style = ttk.Style(root)
-            style.theme_use("clam")
-            print(root)
-            root.configure(bg=style.lookup('TFrame', 'background'))
-            
-            ttk.Label(root, text="Remote branch").grid(row=0, column=0, columnspan=5)
-
-            arrange=0   # 원격 브랜치 나타내기
-            if i>0: # 원격 브랜치가 있을 때
-
-                for i in cmd:
-                    print(i)
-                    q,r=divmod(arrange,5)
-                    if i == headbr[-1]:     # 헤드가 가리키는 원격 브랜치 색 바꾸기
-                        style.configure("Custom.TButton", foreground="red")
-
-                        head_remote = ttk.Button(root, text=i, style="Custom.TButton")
-                        head_remote.grid(row=q+1, column=r)
-
-                        self.b_branch_list.append(head_remote)
-                    else:
-                        self.b_branch_list.append(ttk.Button(root, text=i).grid(row=q+1, column=r))
-                    
-                    self.b_branch_list[len(self.b_branch_list)-1]
-                    arrange += 1
-
-                    
-            else: # 원격 브랜치가 없을 때
-                ttk.Label(root, text="There is no remote branch yet.", foreground="blue").grid(row=1, column=0, columnspan=5)
-                             
-                ttk.Label(root, text="Local branch").grid(row=2, column=0, columnspan=5)
-            
-
-            # 로컬 브랜치 나타내기
-            q,r=divmod(arrange,5)
-            ttk.Label(root, text="Local branch").grid(row=q+2, column=0, columnspan=5)
-                
-            arr=0
-            for j in cmdL:
-                print(j)
-                q,rd=divmod(arrange,5)
-                qd,r=divmod(arr,5)
-                if j == curbr :
-                    style.configure("Custom.TButton", foreground="red")
-
-                    head_local = ttk.Button(root, text=j, style="Custom.TButton")
-                    head_local.grid(row=q+3, column=r)
-
-                    self.b_branch_list.append(head_local)
-                else:
-                    self.b_branch_list.append(ttk.Button(root, text=j).grid(row=q+3, column=r))
-
-                self.b_branch_list[len(self.b_branch_list)-1]
-                arrange += 1
-                arr += 1
-
-            # 브랜치 기능 버튼
-            ttk.Label(root, text="Git Branch Function").grid(columnspan=5)
-            ttk.Button(root, text="Create Branch", command=self.create_branch).grid(column=0)
-            ttk.Button(root, text="Delete Branch", command=self.delete_branch).grid(column=0)
-            ttk.Button(root, text="Rename Branch", command=self.rename_branch).grid(column=0)
-            ttk.Button(root, text="Checkout Branch", command=self.checkout_branch).grid(column=0)
-            
-        else:
-            self.b_branch_list=[]
-
-
+            return cmd, cmdL, i, j, headbr, curbr   
+        
     def create_branch(self):
         dir = self.getdir()
         
@@ -1902,27 +1851,7 @@ class FileBrowser(tk.Toplevel):
     def delete_branch(self):
         #branch 버튼을 클릭하면 새 창 띄우고 깃의 모든 원격 브랜치와 로컬 브랜치 리스트 버튼 보여주기
         if self.is_git_repo():
-            # 원격 브랜치
-            cmd=subprocess.run(['git', 'branch' , '-r'], cwd=self._get_git_directory(), capture_output=True).stdout.decode().strip().split("\n")
-            for i in range(len(cmd)):
-                if i>=len(cmd):
-                    break
-                cmd[i]=cmd[i].replace(" ", "")
-                if "->" in cmd[i]:
-                    headbr = cmd[i].split("->")
-                    del cmd[i]
-                    #headbr[-1]에 헤드가 가리키는 브랜치가 있다.
-            
-            # 로컬 브랜치
-            cmdL=subprocess.run(['git', 'branch'], cwd=self._get_git_directory(), capture_output=True).stdout.decode().strip().split("\n")
-            for j in range(len(cmdL)):
-                if j>=len(cmdL):
-                    break
-                cmdL[j]=cmdL[j].replace(" ", "")
-                if "*" in cmdL[j]:
-                    cmdL[j] = cmdL[j].replace("*", "")
-                    curbr = cmdL[j]
-            
+            cmd, cmdL, i, j, headbr, curbr = self.return_branch_list()
             # 브랜치 새 창 띄우기
             root = tk.Tk()
             style = ttk.Style(root)
@@ -1999,7 +1928,7 @@ class FileBrowser(tk.Toplevel):
                         error_message = e.stderr.strip()
                         messagebox.showerror("Error", error_message)
                     else:
-                        print(str(e))
+                        print(str(e))   
             elif new_branch_name is not None: # "OK" 버튼이 눌렸을 때 메시지가 빈 문자열인 경우
                 messagebox.showerror("Error", "Branch name cannot be empty.")
             elif new_branch_name is None: # "Cancel" 버튼 눌렀을 때
@@ -2008,27 +1937,7 @@ class FileBrowser(tk.Toplevel):
     def rename_branch(self):
         #branch 버튼을 클릭하면 새 창 띄우고 깃의 모든 원격 브랜치와 로컬 브랜치 리스트 버튼 보여주기
         if self.is_git_repo():
-            # 원격 브랜치
-            cmd=subprocess.run(['git', 'branch' , '-r'], cwd=self._get_git_directory(), capture_output=True).stdout.decode().strip().split("\n")
-            for i in range(len(cmd)):
-                if i>=len(cmd):
-                    break
-                cmd[i]=cmd[i].replace(" ", "")
-                if "->" in cmd[i]:
-                    headbr = cmd[i].split("->")
-                    del cmd[i]
-                    #headbr[-1]에 헤드가 가리키는 브랜치가 있다.
-            
-            # 로컬 브랜치
-            cmdL=subprocess.run(['git', 'branch'], cwd=self._get_git_directory(), capture_output=True).stdout.decode().strip().split("\n")
-            for j in range(len(cmdL)):
-                if j>=len(cmdL):
-                    break
-                cmdL[j]=cmdL[j].replace(" ", "")
-                if "*" in cmdL[j]:
-                    cmdL[j] = cmdL[j].replace("*", "")
-                    curbr = cmdL[j]
-            
+            cmd, cmdL, i, j, headbr, curbr = self.return_branch_list()
             # 브랜치 새 창 띄우기
             root = tk.Tk()
             style = ttk.Style(root)
@@ -2089,8 +1998,7 @@ class FileBrowser(tk.Toplevel):
 
                 self.b_branch_list[len(self.b_branch_list)-1]
                 arrange += 1
-                arr += 1
-            
+                arr += 1             
         else:
             self.b_branch_list=[]
 
@@ -2111,29 +2019,9 @@ class FileBrowser(tk.Toplevel):
 
 
     def checkout_branch(self):
-        
         #branch 버튼을 클릭하면 새 창 띄우고 깃의 모든 원격 브랜치와 로컬 브랜치 리스트 버튼 보여주기
         if self.is_git_repo():
-            # 원격 브랜치
-            cmd=subprocess.run(['git', 'branch' , '-r'], cwd=self._get_git_directory(), capture_output=True).stdout.decode().strip().split("\n")
-            for i in range(len(cmd)):
-                if i>=len(cmd):
-                    break
-                cmd[i]=cmd[i].replace(" ", "")
-                if "->" in cmd[i]:
-                    headbr = cmd[i].split("->")
-                    del cmd[i]
-                    #headbr[-1]에 헤드가 가리키는 브랜치가 있다.
-            
-            # 로컬 브랜치
-            cmdL=subprocess.run(['git', 'branch'], cwd=self._get_git_directory(), capture_output=True).stdout.decode().strip().split("\n")
-            for j in range(len(cmdL)):
-                if j>=len(cmdL):
-                    break
-                cmdL[j]=cmdL[j].replace(" ", "")
-                if "*" in cmdL[j]:
-                    cmdL[j] = cmdL[j].replace("*", "")
-                    curbr = cmdL[j]
+            cmd, cmdL, i, j, headbr, curbr = self.return_branch_list()
             
             # 브랜치 새 창 띄우기
             root = tk.Tk()
