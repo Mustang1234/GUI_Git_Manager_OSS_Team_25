@@ -2097,11 +2097,9 @@ class FileBrowser(tk.Toplevel):
             result = subprocess.run(['git', 'merge', branch_name], cwd=dir, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             result.check_returncode()  # 오류확인
 
-
-            # merge가 정상적으로 수행되었을 때 git 메시지 출력
-            if result.returncode == 0:
-                git_message = result.stdout.strip().decode('utf-8')
-                messagebox.showinfo("Git Merge Message", git_message)
+            # merge가 정상적으로 수행되었을 때 git 메시지 출력(정상 merge, already up to date)
+            git_message = result.stdout.strip().decode('utf-8')
+            messagebox.showinfo("Git Merge Message", git_message)
             
         except subprocess.CalledProcessError as e:
             # 오류가 발생한 경우 오류 메시지창 띄우기
@@ -2109,7 +2107,10 @@ class FileBrowser(tk.Toplevel):
                 error_message = e.stderr.strip()
                 messagebox.showerror("Error", error_message)
             else:
-                print(str(e))
+                if "non-zero exit status 1" in str(e):
+                    messagebox.showerror("Merge Conflict Error", "CONFLICT (content): Merge conflict occured.\nThe merge will be canceled automatically by git merge --abort.")
+                    subprocess.run(['git', 'merge', '--abort'], cwd=dir)
+                #print(str(e))
 
 
     def merge_branch(self):
