@@ -1839,6 +1839,9 @@ class FileBrowser(tk.Toplevel):
                 try:
                     result = subprocess.run(['git', 'branch', branch_name], cwd=dir, stderr=subprocess.PIPE)
                     result.check_returncode()  # 오류확인
+                    if result.returncode == 0:
+                        # create가 정상적으로 수행되었을 때 확인 메세지창
+                        messagebox.showinfo("Git create Message", "Create successful! Now [ " + branch_name + " ] branch is exists.")
 
                 except subprocess.CalledProcessError as e:
                     # 오류가 발생한 경우 오류 메시지창 띄우기
@@ -1861,7 +1864,7 @@ class FileBrowser(tk.Toplevel):
                 result.check_returncode()  
                 if result.returncode == 0:
                     # delete가 정상적으로 수행되었을 때 확인 메세지창
-                    messagebox.showinfo("Git delete Message", "Delete successful! Now [ " + branch_name + " ] branch is not exist.")
+                    messagebox.showinfo("Git delete Message", "Delete successful! Now [ " + branch_name + " ] branch is not exists.")
                 
                     root.destroy()  # 만약 실행 후 창을 닫고 싶으면 이 줄만 실행
                     #self.rename_branch() # 만약 새로 고침을 하고 싶다면 이 줄도 추가 
