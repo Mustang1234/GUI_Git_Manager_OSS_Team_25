@@ -2131,7 +2131,7 @@ class FileBrowser(tk.Toplevel):
         else:
             self.b_branch_list=[]
         
-    def clicked_to_merge(self, branch_name):
+    def clicked_to_merge(self, branch_name, root):
         dir = self.getdir()
 
         try:
@@ -2141,6 +2141,8 @@ class FileBrowser(tk.Toplevel):
             # merge가 정상적으로 수행되었을 때 git 메시지 출력(정상 merge, already up to date)
             git_message = result.stdout.strip().decode('utf-8')
             messagebox.showinfo("Git Merge Message", git_message)
+            root.destroy()  # 만약 실행 후 창을 닫고 싶으면 이 줄만 실행
+            #self.rename_branch() # 만약 새로 고침을 하고 싶다면 이 줄도 추가 
             
         except subprocess.CalledProcessError as e:
             # 오류가 발생한 경우 오류 메시지창 띄우기
@@ -2179,12 +2181,12 @@ class FileBrowser(tk.Toplevel):
                     if i == headbr[-1]:     # 헤드가 가리키는 원격 브랜치 색 바꾸기
                         style.configure("Custom.TButton", foreground="red")
 
-                        head_remote = ttk.Button(root, text=i, command=lambda id=i: self.clicked_to_merge(id), style="Custom.TButton")
+                        head_remote = ttk.Button(root, text=i, command=lambda id=i: self.clicked_to_merge(id, root), style="Custom.TButton")
                         head_remote.grid(row=q+3, column=r)
 
                         self.b_branch_list.append(head_remote)
                     else:
-                        self.b_branch_list.append(ttk.Button(root, text=i, command=lambda id=i: self.clicked_to_merge(id)).grid(row=q+3, column=r))
+                        self.b_branch_list.append(ttk.Button(root, text=i, command=lambda id=i: self.clicked_to_merge(id, root)).grid(row=q+3, column=r))
                     
                     self.b_branch_list[len(self.b_branch_list)-1]
                     arrange += 1
@@ -2209,12 +2211,12 @@ class FileBrowser(tk.Toplevel):
                 if j == curbr :
                     style.configure("Custom.TButton", foreground="red")
 
-                    head_local = ttk.Button(root, text=j, command=lambda id=j: self.clicked_to_merge(id), style="Custom.TButton")
+                    head_local = ttk.Button(root, text=j, command=lambda id=j: self.clicked_to_merge(id, root), style="Custom.TButton")
                     head_local.grid(row=q+6, column=r)
 
                     self.b_branch_list.append(head_local)
                 else:
-                    self.b_branch_list.append(ttk.Button(root, text=j, command=lambda id=j: self.clicked_to_merge(id)).grid(row=q+6, column=r))
+                    self.b_branch_list.append(ttk.Button(root, text=j, command=lambda id=j: self.clicked_to_merge(id, root)).grid(row=q+6, column=r))
 
                 self.b_branch_list[len(self.b_branch_list)-1]
                 arrange += 1
