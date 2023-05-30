@@ -277,6 +277,13 @@ class FileBrowser(tk.Toplevel):
         self.b_branch = ttk.Button(self.frame_buttons1, text="Branch",
                                        command=self.branch).pack(side="left",padx=(0,3))
         self.b_branch_list=[]
+
+        self.b_head_text = tk.StringVar()
+        self.b_head_text.set("Show Head Branch")
+        #style.configure("Custom.TButton", foreground="cyan", background="black")
+        #self.b_branch_head = ttk.Button(self.frame_buttons1, textvariable=self.b_head_text, command=self.update_branch_head, style="Custom.TButton")
+        self.b_branch_head = ttk.Button(self.frame_buttons1, textvariable=self.b_head_text, command=self.update_branch_head)
+
         self.b_log = ttk.Button(self.frame_buttons1, text="Log",
                                        command=self.log).pack(side="left",padx=(0,3))
         self.b_clone = ttk.Button(self.frame_buttons1, text="Clone",
@@ -1771,6 +1778,13 @@ class FileBrowser(tk.Toplevel):
     def branch(self):
         #branch 버튼을 클릭하면 새 창 띄우고 깃의 모든 원격 브랜치와 로컬 브랜치 리스트 버튼 보여주기
         if self.is_git_repo():
+            style = ttk.Style()
+            style.configure("Custom.TButton", background="cyan")
+            self.b_branch_head.configure(style="Custom.TButton")
+
+            self.update_branch_head()
+            self.b_branch_head.pack(side="right", padx=(0,4))
+
             # 브랜치 새 창 띄우기
             root = tk.Tk()
             style = ttk.Style(root)
@@ -2109,8 +2123,10 @@ class FileBrowser(tk.Toplevel):
             else:
                 if "non-zero exit status 1" in str(e):
                     messagebox.showerror("Merge Conflict Error", "CONFLICT (content): Merge conflict occured.\nThe merge will be canceled automatically by git merge --abort.")
+                    print(str(e))
+                    unmergedp = subprocess.run(['git', 'status'], cwd=dir)
+                    print(unmergedp)
                     subprocess.run(['git', 'merge', '--abort'], cwd=dir)
-                #print(str(e))
 
 
     def merge_branch(self):
@@ -2180,11 +2196,12 @@ class FileBrowser(tk.Toplevel):
         else:
             self.b_branch_list=[]
 
+    def update_branch_head(self):
 
-
-
-
-
+        if self.is_git_repo():
+            # 헤드가 가리키는 로컬 브랜치 나타내기
+            cmd, cmdL, i, j, headbr, curbr = self.return_branch_list()
+            self.b_head_text.set(curbr)
 
 
 
