@@ -1854,11 +1854,17 @@ class FileBrowser(tk.Toplevel):
         else:
             print("fatal: not a git repository (or any of the parent directories): .git")
     
-    def clicked_to_delete(self, branch_name):
+    def clicked_to_delete(self, branch_name, root):
             dir=self.getdir()
             try:
                 result = subprocess.run(['git', 'branch', '-d', branch_name], cwd=dir, stderr=subprocess.PIPE)
                 result.check_returncode()  
+                if result.returncode == 0:
+                    # delete가 정상적으로 수행되었을 때 확인 메세지창
+                    messagebox.showinfo("Git delete Message", "Delete successful! Now [ " + branch_name + " ] branch is not exist.")
+                
+                    root.destroy()  # 만약 실행 후 창을 닫고 싶으면 이 줄만 실행
+                    #self.rename_branch() # 만약 새로 고침을 하고 싶다면 이 줄도 추가 
             
             except subprocess.CalledProcessError as e:
                 if e.stderr:
@@ -1890,12 +1896,12 @@ class FileBrowser(tk.Toplevel):
                     if i == headbr[-1]:     # 헤드가 가리키는 원격 브랜치 색 바꾸기
                         style.configure("Custom.TButton", foreground="red")
 
-                        head_remote = ttk.Button(root, text=i, command=lambda id=i: self.clicked_to_delete(id), style="Custom.TButton")
+                        head_remote = ttk.Button(root, text=i, command=lambda id=i: self.clicked_to_delete(id, root), style="Custom.TButton")
                         head_remote.grid(row=q+3, column=r)
 
                         self.b_branch_list.append(head_remote)
                     else:
-                        self.b_branch_list.append(ttk.Button(root, text=i, command=lambda id=i: self.clicked_to_delete(id)).grid(row=q+3, column=r))
+                        self.b_branch_list.append(ttk.Button(root, text=i, command=lambda id=i: self.clicked_to_delete(id, root)).grid(row=q+3, column=r))
                     
                     self.b_branch_list[len(self.b_branch_list)-1]
                     arrange += 1
@@ -1920,12 +1926,12 @@ class FileBrowser(tk.Toplevel):
                 if j == curbr :
                     style.configure("Custom.TButton", foreground="red")
 
-                    head_local = ttk.Button(root, text=j, command=lambda id=j: self.clicked_to_delete(id), style="Custom.TButton")
+                    head_local = ttk.Button(root, text=j, command=lambda id=j: self.clicked_to_delete(id, root), style="Custom.TButton")
                     head_local.grid(row=q+6, column=r)
 
                     self.b_branch_list.append(head_local)
                 else:
-                    self.b_branch_list.append(ttk.Button(root, text=j, command=lambda id=j: self.clicked_to_delete(id)).grid(row=q+6, column=r))
+                    self.b_branch_list.append(ttk.Button(root, text=j, command=lambda id=j: self.clicked_to_delete(id, root)).grid(row=q+6, column=r))
 
                 self.b_branch_list[len(self.b_branch_list)-1]
                 arrange += 1
@@ -1943,7 +1949,7 @@ class FileBrowser(tk.Toplevel):
                     result = subprocess.run(['git', 'branch', '-m', old_branch_name, new_branch_name], cwd=dir, stderr=subprocess.PIPE)
                     result.check_returncode()  
                     if result.returncode == 0:
-                        # checkout이 정상적으로 수행되었을 때 확인 메세지창
+                        # rename이 정상적으로 수행되었을 때 확인 메세지창
                         messagebox.showinfo("Git rename Message", "Rename successful! Now [ " + old_branch_name + " ] branch is [ " + new_branch_name + " ] branch.")
                 
                         root.destroy()  # 만약 실행 후 창을 닫고 싶으면 이 줄만 실행
