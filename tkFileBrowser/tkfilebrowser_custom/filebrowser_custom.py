@@ -1839,6 +1839,7 @@ class FileBrowser(tk.Toplevel):
                 try:
                     result = subprocess.run(['git', 'branch', branch_name], cwd=dir, stderr=subprocess.PIPE)
                     result.check_returncode()  # 오류확인
+                    self.update_status()
 
                 except subprocess.CalledProcessError as e:
                     # 오류가 발생한 경우 오류 메시지창 띄우기
@@ -1858,7 +1859,8 @@ class FileBrowser(tk.Toplevel):
             dir=self.getdir()
             try:
                 result = subprocess.run(['git', 'branch', '-d', branch_name], cwd=dir, stderr=subprocess.PIPE)
-                result.check_returncode()  
+                result.check_returncode()
+                self.update_status()
             
             except subprocess.CalledProcessError as e:
                 if e.stderr:
@@ -1941,7 +1943,9 @@ class FileBrowser(tk.Toplevel):
             if new_branch_name and new_branch_name.strip(): # rename할 브랜치 이름 작성하고 "OK" 버튼이 눌렀을 때
                 try:
                     result = subprocess.run(['git', 'branch', '-m', old_branch_name, new_branch_name], cwd=dir, stderr=subprocess.PIPE)
-                    result.check_returncode()  
+                    result.check_returncode()
+                    self.update_status()
+
                 except subprocess.CalledProcessError as e:
                     if e.stderr:
                         error_message = e.stderr.strip()
@@ -2026,6 +2030,7 @@ class FileBrowser(tk.Toplevel):
         try:
             result = subprocess.run(['git', 'checkout', branch_name], cwd=dir, stderr=subprocess.PIPE)
             result.check_returncode()  # 오류확인
+            self.update_status()
             
         except subprocess.CalledProcessError as e:
             # 오류가 발생한 경우 오류 메시지창 띄우기
@@ -2114,6 +2119,7 @@ class FileBrowser(tk.Toplevel):
             # merge가 정상적으로 수행되었을 때 git 메시지 출력(정상 merge, already up to date)
             git_message = result.stdout.strip().decode('utf-8')
             messagebox.showinfo("Git Merge Message", git_message)
+            self.update_status()
             
         except subprocess.CalledProcessError as e:
             # 오류가 발생한 경우 오류 메시지창 띄우기
