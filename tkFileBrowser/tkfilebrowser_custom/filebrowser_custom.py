@@ -280,8 +280,7 @@ class FileBrowser(tk.Toplevel):
 
         self.b_head_text = tk.StringVar()
         self.b_head_text.set("Show Head Branch")
-        #style.configure("Custom.TButton", foreground="cyan", background="black")
-        #self.b_branch_head = ttk.Button(self.frame_buttons1, textvariable=self.b_head_text, command=self.update_branch_head, style="Custom.TButton")
+        
         self.b_branch_head = ttk.Button(self.frame_buttons1, textvariable=self.b_head_text, command=self.update_branch_head)
 
         self.b_log = ttk.Button(self.frame_buttons1, text="Log",
@@ -1778,12 +1777,9 @@ class FileBrowser(tk.Toplevel):
     def branch(self):
         #branch 버튼을 클릭하면 새 창 띄우고 깃의 모든 원격 브랜치와 로컬 브랜치 리스트 버튼 보여주기
         if self.is_git_repo():
-            style = ttk.Style()
-            style.configure("Custom.TButton", background="cyan")
-            self.b_branch_head.configure(style="Custom.TButton")
 
+            #브랜치 헤드 업데이트
             self.update_branch_head()
-            self.b_branch_head.pack(side="right", padx=(0,4))
 
             # 브랜치 새 창 띄우기
             root = tk.Tk()
@@ -2245,6 +2241,8 @@ class FileBrowser(tk.Toplevel):
             self.b_branch_head.pack(side="right", padx=(0,4))
             cmd, cmdL, i, j, headbr, curbr = self.return_branch_list()
             self.b_head_text.set(curbr)
+        else:
+            self.b_branch_head.pack_forget()
 
 
     def log(self):
