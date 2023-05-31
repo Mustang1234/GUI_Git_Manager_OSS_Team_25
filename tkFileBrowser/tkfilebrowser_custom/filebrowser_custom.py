@@ -1227,7 +1227,7 @@ class FileBrowser(tk.Toplevel):
         root = folder
         extension = self.filetypes[self.filetype.get()]
         content = listdir(folder)
-        self.branch()
+        self.update_branch_head()
         self.init_need_num(len(content))
         i = 0
         for f in content:
@@ -1348,7 +1348,7 @@ class FileBrowser(tk.Toplevel):
         self.right_tree.delete(*self.right_tree.get_children(""))
         self.right_tree.delete(*self.hidden)
         self.hidden = ()
-        self.branch()
+        self.update_branch_head()
         try:
             root, dirs, files = walk(folder).send(None)
             self.init_need_num(len(files)+len(dirs))
@@ -1483,7 +1483,7 @@ class FileBrowser(tk.Toplevel):
         self.right_tree.delete(*self.hidden)
         self.hidden = ()
         extension = self.filetypes[self.filetype.get()]
-        self.branch()
+        self.update_branch_head()
         try:
             content = sorted(scandir(folder), key=key_sort_files)
             self.init_need_num(len(content))
@@ -2229,11 +2229,12 @@ class FileBrowser(tk.Toplevel):
 
         if self.is_git_repo():
             # 헤드가 가리키는 로컬 브랜치 나타내기
+            style = ttk.Style()
+            style.configure("Custom.TButton", background="cyan")
+            self.b_branch_head.configure(style="Custom.TButton")
+            self.b_branch_head.pack(side="right", padx=(0,4))
             cmd, cmdL, i, j, headbr, curbr = self.return_branch_list()
             self.b_head_text.set(curbr)
-
-
-
 
 
     def log(self):
