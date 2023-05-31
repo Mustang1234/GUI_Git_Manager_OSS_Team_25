@@ -1872,7 +1872,7 @@ class FileBrowser(tk.Toplevel):
                     self.update_status()
                     
                     root.destroy()  # 만약 실행 후 창을 닫고 싶으면 이 줄만 실행
-                    #self.rename_branch() # 만약 새로 고침을 하고 싶다면 이 줄도 추가 
+                    self.delete_branch() # 만약 새로 고침을 하고 싶다면 이 줄도 추가 
             
             except subprocess.CalledProcessError as e:
                 if e.stderr:
@@ -1963,7 +1963,7 @@ class FileBrowser(tk.Toplevel):
                         self.update_status()
                 
                         root.destroy()  # 만약 실행 후 창을 닫고 싶으면 이 줄만 실행
-                        #self.rename_branch() # 만약 새로 고침을 하고 싶다면 이 줄도 추가 
+                        self.rename_branch() # 만약 새로 고침을 하고 싶다면 이 줄도 추가 
 
                 except subprocess.CalledProcessError as e:
                     if e.stderr:
@@ -2060,7 +2060,7 @@ class FileBrowser(tk.Toplevel):
                 messagebox.showinfo("Git Checkout Message", "Checkout successful! Now you are in [ " + branch_name + " ] branch.")
                 
                 root.destroy()  # 만약 실행 후 창을 닫고 싶으면 이 줄만 실행
-                #self.rename_branch() # 만약 새로 고침을 하고 싶다면 이 줄도 추가 
+                self.checkout_branch() # 만약 새로 고침을 하고 싶다면 이 줄도 추가 
             
         except subprocess.CalledProcessError as e:
             # 오류가 발생한 경우 오류 메시지창 띄우기
