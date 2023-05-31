@@ -275,7 +275,7 @@ class FileBrowser(tk.Toplevel):
         self.frame_buttons2 = ttk.Frame(self)
         self.frame_buttons2.grid(row=4, sticky="ew", pady=3, padx=10)
         self.b_branch = ttk.Button(self.frame_buttons1, text="Branch",
-                                       command=self.branch).pack(side="left",padx=(0,3))
+                                       command=self.branch_function)
         self.b_branch_list=[]
 
         self.b_head_text = tk.StringVar()
@@ -1226,6 +1226,7 @@ class FileBrowser(tk.Toplevel):
         root = folder
         extension = self.filetypes[self.filetype.get()]
         content = listdir(folder)
+        self.branch()
         self.update_branch_head()
         self.init_need_num(len(content))
         i = 0
@@ -1347,6 +1348,7 @@ class FileBrowser(tk.Toplevel):
         self.right_tree.delete(*self.right_tree.get_children(""))
         self.right_tree.delete(*self.hidden)
         self.hidden = ()
+        self.branch()
         self.update_branch_head()
         try:
             root, dirs, files = walk(folder).send(None)
@@ -1482,6 +1484,7 @@ class FileBrowser(tk.Toplevel):
         self.right_tree.delete(*self.hidden)
         self.hidden = ()
         extension = self.filetypes[self.filetype.get()]
+        self.branch()
         self.update_branch_head()
         try:
             content = sorted(scandir(folder), key=key_sort_files)
@@ -1773,8 +1776,19 @@ class FileBrowser(tk.Toplevel):
         except subprocess.CalledProcessError as e:
             print("Failed to rename file using git mv command. stderr:", e.stderr.decode())
 
-
     def branch(self):
+        if self.is_git_repo():
+            self.b_branch.pack(side="left",padx=(0,3))
+
+            #브랜치 헤드 업데이트
+            self.update_branch_head()
+        else:
+            self.b_branch.pack_forget()
+    
+
+
+
+    def branch_function(self):
         #branch 버튼을 클릭하면 새 창 띄우고 깃의 모든 원격 브랜치와 로컬 브랜치 리스트 버튼 보여주기
         if self.is_git_repo():
 
@@ -1795,7 +1809,7 @@ class FileBrowser(tk.Toplevel):
             ttk.Button(root, text="Rename Branch", command=self.rename_branch).grid(column=0, columnspan=5)
             ttk.Button(root, text="Checkout Branch", command=self.checkout_branch).grid(column=0, pady=8, columnspan=5)
             ttk.Button(root, text="Merge Branch", command=self.merge_branch).grid(column=0, columnspan=5)
-            
+
             
     def return_branch_list(self):
         if self.is_git_repo():
