@@ -2163,8 +2163,28 @@ class FileBrowser(tk.Toplevel):
                 if "non-zero exit status 1" in str(e):
                     messagebox.showerror("Merge Conflict Error", "CONFLICT (content): Merge conflict occured.\nThe merge will be canceled automatically by git merge --abort.")
                     print(str(e))
-                    unmergedp = subprocess.run(['git', 'status'], cwd=dir)
-                    print(unmergedp)
+                    
+                    unmerged_s = subprocess.run(['git', 'status'], cwd=dir, stdout=subprocess.PIPE)
+                    unmerged_s_d = unmerged_s.stdout.strip().decode('utf-8')
+                    split_s = unmerged_s_d.split("\n\n")
+                    pick_unmerged_p = "Unmerged paths:"
+                    unmerged_p_l = [string for string in split_s if pick_unmerged_p in string] # list타입
+                    split_unm = unmerged_p_l[0].split("\n")   # split_unm[1] 제외하고 모두 보여주기.
+                    unmerged_path = split_unm[:1] + split_unm[2:]
+                    print(unmerged_path)  
+                    
+                    root_unm = tk.Tk()
+                    style = ttk.Style(root_unm)
+                    style.theme_use("clam")
+                    print(root_unm)
+                    root_unm.configure(bg=style.lookup('TFrame', 'background'))    
+                    for n in range(len(unmerged_path)):
+                        ttk.Label(root_unm, text=unmerged_path[n]).grid(row=n, column=0, columnspan=5)
+                    
+                    msg_row = len(unmerged_path) + 1
+                    ttk.Label(root_unm, text=" ").grid(row=msg_row, column=0, columnspan=5)
+                    msg_text = "Fix these files directly to prevent conflicts. Please press the merge button again after solving it."
+                    ttk.Label(root_unm, text=msg_text).grid(row=msg_row+1, column=0, columnspan=5)
                     subprocess.run(['git', 'merge', '--abort'], cwd=dir)
 
 
@@ -2245,7 +2265,8 @@ class FileBrowser(tk.Toplevel):
             self.b_branch_head.pack(side="right", padx=(0,4))
             cmd, cmdL, i, j, headbr, curbr = self.return_branch_list()
             self.b_head_text.set(curbr)
-
+        # else : 
+            
 
     def log(self):
         pass
