@@ -1882,7 +1882,7 @@ class FileBrowser(tk.Toplevel):
                     self.update_status()
                     
                     root.destroy()  # 만약 실행 후 창을 닫고 싶으면 이 줄만 실행
-                    #self.rename_branch() # 만약 새로 고침을 하고 싶다면 이 줄도 추가 
+                    self.delete_branch() # 만약 새로 고침을 하고 싶다면 이 줄도 추가 
             
             except subprocess.CalledProcessError as e:
                 if e.stderr:
@@ -1973,7 +1973,7 @@ class FileBrowser(tk.Toplevel):
                         self.update_status()
                 
                         root.destroy()  # 만약 실행 후 창을 닫고 싶으면 이 줄만 실행
-                        #self.rename_branch() # 만약 새로 고침을 하고 싶다면 이 줄도 추가 
+                        self.rename_branch() # 만약 새로 고침을 하고 싶다면 이 줄도 추가 
 
                 except subprocess.CalledProcessError as e:
                     if e.stderr:
@@ -2070,7 +2070,7 @@ class FileBrowser(tk.Toplevel):
                 messagebox.showinfo("Git Checkout Message", "Checkout successful! Now you are in [ " + branch_name + " ] branch.")
                 
                 root.destroy()  # 만약 실행 후 창을 닫고 싶으면 이 줄만 실행
-                #self.rename_branch() # 만약 새로 고침을 하고 싶다면 이 줄도 추가 
+                self.checkout_branch() # 만약 새로 고침을 하고 싶다면 이 줄도 추가 
             
         except subprocess.CalledProcessError as e:
             # 오류가 발생한 경우 오류 메시지창 띄우기
@@ -2173,8 +2173,28 @@ class FileBrowser(tk.Toplevel):
                 if "non-zero exit status 1" in str(e):
                     messagebox.showerror("Merge Conflict Error", "CONFLICT (content): Merge conflict occured.\nThe merge will be canceled automatically by git merge --abort.")
                     print(str(e))
-                    unmergedp = subprocess.run(['git', 'status'], cwd=dir)
-                    print(unmergedp)
+                    
+                    unmerged_s = subprocess.run(['git', 'status'], cwd=dir, stdout=subprocess.PIPE)
+                    unmerged_s_d = unmerged_s.stdout.strip().decode('utf-8')
+                    split_s = unmerged_s_d.split("\n\n")
+                    pick_unmerged_p = "Unmerged paths:"
+                    unmerged_p_l = [string for string in split_s if pick_unmerged_p in string] # list타입
+                    split_unm = unmerged_p_l[0].split("\n")   # split_unm[1] 제외하고 모두 보여주기.
+                    unmerged_path = split_unm[:1] + split_unm[2:]
+                    print(unmerged_path)  
+                    
+                    root_unm = tk.Tk()
+                    style = ttk.Style(root_unm)
+                    style.theme_use("clam")
+                    print(root_unm)
+                    root_unm.configure(bg=style.lookup('TFrame', 'background'))    
+                    for n in range(len(unmerged_path)):
+                        ttk.Label(root_unm, text=unmerged_path[n]).grid(row=n, column=0, columnspan=5)
+                    
+                    msg_row = len(unmerged_path) + 1
+                    ttk.Label(root_unm, text=" ").grid(row=msg_row, column=0, columnspan=5)
+                    msg_text = "Fix these files directly to prevent conflicts. Please press the merge button again after solving it."
+                    ttk.Label(root_unm, text=msg_text).grid(row=msg_row+1, column=0, columnspan=5)
                     subprocess.run(['git', 'merge', '--abort'], cwd=dir)
 
 
