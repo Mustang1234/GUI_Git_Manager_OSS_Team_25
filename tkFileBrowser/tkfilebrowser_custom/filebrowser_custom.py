@@ -2065,7 +2065,7 @@ class FileBrowser(tk.Toplevel):
         
         
 
-    def clicked_to_checkout(self, branch_name, root, root_che):
+    def clicked_to_checkout(self, iscurbr, branch_name, root, root_che):
         dir = self.getdir()
 
         try:
@@ -2075,7 +2075,10 @@ class FileBrowser(tk.Toplevel):
             
             if result.returncode == 0:
                 # checkout이 정상적으로 수행되었을 때 확인 메세지창
-                messagebox.showinfo("Git Checkout Message", "Checkout successful! Now you are in [ " + branch_name + " ] branch.")
+                if iscurbr == "Y":
+                    messagebox.showinfo("Git Checkout Message", "The branch you just chose is the current branch. So checkout is executed, but the branch is unchanged.")
+                else:
+                    messagebox.showinfo("Git Checkout Message", "Checkout successful! Now you are in [ " + branch_name + " ] branch.")
                 
                 root_che.destroy()  # 만약 실행 후 창을 닫고 싶으면 이 줄만 실행
                 #self.checkout_branch(root) # 만약 새로 고침을 하고 싶다면 이 줄도 추가
@@ -2115,12 +2118,12 @@ class FileBrowser(tk.Toplevel):
                     if i == headbr[-1]:     # 헤드가 가리키는 원격 브랜치 색 바꾸기
                         style.configure("Custom.TButton", foreground="red")
 
-                        head_remote = ttk.Button(root_che, text=i, command=lambda id=i: self.clicked_to_checkout(id, root, root_che), style="Custom.TButton")
+                        head_remote = ttk.Button(root_che, text=i, command=lambda id=i: self.clicked_to_checkout("Y", id, root, root_che), style="Custom.TButton")
                         head_remote.grid(row=q+3, column=r)
 
                         self.b_branch_list.append(head_remote)
                     else:
-                        self.b_branch_list.append(ttk.Button(root_che, text=i, command=lambda id=i: self.clicked_to_checkout(id, root, root_che)).grid(row=q+3, column=r))
+                        self.b_branch_list.append(ttk.Button(root_che, text=i, command=lambda id=i: self.clicked_to_checkout("N", id, root, root_che)).grid(row=q+3, column=r))
                     
                     self.b_branch_list[len(self.b_branch_list)-1]
                     arrange += 1
@@ -2145,12 +2148,12 @@ class FileBrowser(tk.Toplevel):
                 if j == curbr :
                     style.configure("Custom.TButton", foreground="red")
 
-                    head_local = ttk.Button(root_che, text=j, command=lambda id=j: self.clicked_to_checkout(id, root, root_che), style="Custom.TButton")
+                    head_local = ttk.Button(root_che, text=j, command=lambda id=j: self.clicked_to_checkout("Y", id, root, root_che), style="Custom.TButton")
                     head_local.grid(row=q+6, column=r)
 
                     self.b_branch_list.append(head_local)
                 else:
-                    self.b_branch_list.append(ttk.Button(root_che, text=j, command=lambda id=j: self.clicked_to_checkout(id, root, root_che)).grid(row=q+6, column=r))
+                    self.b_branch_list.append(ttk.Button(root_che, text=j, command=lambda id=j: self.clicked_to_checkout("N", id, root, root_che)).grid(row=q+6, column=r))
 
                 self.b_branch_list[len(self.b_branch_list)-1]
                 arrange += 1
