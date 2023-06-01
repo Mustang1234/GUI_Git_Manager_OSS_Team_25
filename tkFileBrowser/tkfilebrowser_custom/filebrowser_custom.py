@@ -1804,8 +1804,8 @@ class FileBrowser(tk.Toplevel):
 
             # 브랜치 기능 버튼
             ttk.Label(root, text="Git Branch Function").grid(columnspan=5, padx=60, pady=10, sticky='ew')
-            ttk.Button(root, text="Create Branch", command=self.create_branch).grid(column=0, columnspan=5)
-            ttk.Button(root, text="Delete Branch", command=self.delete_branch).grid(column=0, pady=8, columnspan=5)
+            ttk.Button(root, text="Create Branch", command=lambda: self.create_branch(root)).grid(column=0, columnspan=5)
+            ttk.Button(root, text="Delete Branch", command=lambda: self.delete_branch(root)).grid(column=0, pady=8, columnspan=5)
             ttk.Button(root, text="Rename Branch", command=self.rename_branch).grid(column=0, columnspan=5)
             ttk.Button(root, text="Checkout Branch", command=self.checkout_branch).grid(column=0, pady=8, columnspan=5)
             ttk.Button(root, text="Merge Branch", command=self.merge_branch).grid(column=0, columnspan=5)
@@ -1839,7 +1839,7 @@ class FileBrowser(tk.Toplevel):
     
     #def show_branch_list(self):
             
-    def create_branch(self):
+    def create_branch(self, root):
         dir = self.getdir()
         
         if self.is_git_repo():
@@ -1855,6 +1855,8 @@ class FileBrowser(tk.Toplevel):
                         messagebox.showinfo("Git create Message", "Create successful! Now [ " + branch_name + " ] branch is exists.")
                         self.update_status()
 
+                        root.destroy()
+
                 except subprocess.CalledProcessError as e:
                     # 오류가 발생한 경우 오류 메시지창 띄우기
                     if e.stderr:
@@ -1869,7 +1871,7 @@ class FileBrowser(tk.Toplevel):
         else:
             print("fatal: not a git repository (or any of the parent directories): .git")
     
-    def clicked_to_delete(self, branch_name, root):
+    def clicked_to_delete(self, branch_name, root, root_del):
             dir=self.getdir()
             try:
                 result = subprocess.run(['git', 'branch', '-d', branch_name], cwd=dir, stderr=subprocess.PIPE)
@@ -1881,8 +1883,10 @@ class FileBrowser(tk.Toplevel):
                     messagebox.showinfo("Git delete Message", "Delete successful! Now [ " + branch_name + " ] branch is not exists.")
                     self.update_status()
                     
-                    root.destroy()  # 만약 실행 후 창을 닫고 싶으면 이 줄만 실행
-                    self.delete_branch() # 만약 새로 고침을 하고 싶다면 이 줄도 추가 
+                    root_del.destroy()  # 만약 실행 후 창을 닫고 싶으면 이 줄만 실행
+                    self.delete_branch(root) # 만약 새로 고침을 하고 싶다면 이 줄도 추가
+
+                    root.destroy()
             
             except subprocess.CalledProcessError as e:
                 if e.stderr:
@@ -1891,19 +1895,19 @@ class FileBrowser(tk.Toplevel):
                 else:
                     print(str(e))
             
-    def delete_branch(self):
+    def delete_branch(self, root):
         #branch 버튼을 클릭하면 새 창 띄우고 깃의 모든 원격 브랜치와 로컬 브랜치 리스트 버튼 보여주기
         if self.is_git_repo():
             cmd, cmdL, i, j, headbr, curbr = self.return_branch_list()
             # 브랜치 새 창 띄우기
-            root = tk.Tk()
-            style = ttk.Style(root)
+            root_del = tk.Tk()
+            style = ttk.Style(root_del)
             style.theme_use("clam")
-            print(root)
-            root.configure(bg=style.lookup('TFrame', 'background'))
-            ttk.Label(root, text="Select one branch you want to delete.").grid(row=0, column=0, columnspan=5)
-            ttk.Label(root, text=" ").grid(row=1, column=0, columnspan=5)
-            ttk.Label(root, text="[Remote branch]").grid(row=2, column=0, columnspan=5)
+            print(root_del)
+            root_del.configure(bg=style.lookup('TFrame', 'background'))
+            ttk.Label(root_del, text="Select one branch you want to delete.").grid(row=0, column=0, columnspan=5)
+            ttk.Label(root_del, text=" ").grid(row=1, column=0, columnspan=5)
+            ttk.Label(root_del, text="[Remote branch]").grid(row=2, column=0, columnspan=5)
 
             arrange=0   # 원격 브랜치 나타내기
             if i>0: # 원격 브랜치가 있을 때
@@ -1914,27 +1918,27 @@ class FileBrowser(tk.Toplevel):
                     if i == headbr[-1]:     # 헤드가 가리키는 원격 브랜치 색 바꾸기
                         style.configure("Custom.TButton", foreground="red")
 
-                        head_remote = ttk.Button(root, text=i, command=lambda id=i: self.clicked_to_delete(id, root), style="Custom.TButton")
+                        head_remote = ttk.Button(root_del, text=i, command=lambda id=i: self.clicked_to_delete(id, root, root_del), style="Custom.TButton")
                         head_remote.grid(row=q+3, column=r)
 
                         self.b_branch_list.append(head_remote)
                     else:
-                        self.b_branch_list.append(ttk.Button(root, text=i, command=lambda id=i: self.clicked_to_delete(id, root)).grid(row=q+3, column=r))
+                        self.b_branch_list.append(ttk.Button(root_del, text=i, command=lambda id=i: self.clicked_to_delete(id, root, root_del)).grid(row=q+3, column=r))
                     
                     self.b_branch_list[len(self.b_branch_list)-1]
                     arrange += 1
 
                     
             else: # 원격 브랜치가 없을 때
-                ttk.Label(root, text="There is no remote branch yet.", foreground="blue").grid(row=3, column=0, columnspan=5)
-                ttk.Label(root, text=" ").grid(row=4, column=0, columnspan=5)          
-                ttk.Label(root, text="[Local branch]").grid(row=5, column=0, columnspan=5)
+                ttk.Label(root_del, text="There is no remote branch yet.", foreground="blue").grid(row=3, column=0, columnspan=5)
+                ttk.Label(root_del, text=" ").grid(row=4, column=0, columnspan=5)          
+                ttk.Label(root_del, text="[Local branch]").grid(row=5, column=0, columnspan=5)
             
 
             # 로컬 브랜치 나타내기
             q,r=divmod(arrange,5)
-            ttk.Label(root, text=" ").grid(row=q+4, column=0, columnspan=5)
-            ttk.Label(root, text="[Local branch]").grid(row=q+5, column=0, columnspan=5)
+            ttk.Label(root_del, text=" ").grid(row=q+4, column=0, columnspan=5)
+            ttk.Label(root_del, text="[Local branch]").grid(row=q+5, column=0, columnspan=5)
                 
             arr=0
             for j in cmdL:
@@ -1944,12 +1948,12 @@ class FileBrowser(tk.Toplevel):
                 if j == curbr :
                     style.configure("Custom.TButton", foreground="red")
 
-                    head_local = ttk.Button(root, text=j, command=lambda id=j: self.clicked_to_delete(id, root), style="Custom.TButton")
+                    head_local = ttk.Button(root_del, text=j, command=lambda id=j: self.clicked_to_delete(id, root, root_del), style="Custom.TButton")
                     head_local.grid(row=q+6, column=r)
 
                     self.b_branch_list.append(head_local)
                 else:
-                    self.b_branch_list.append(ttk.Button(root, text=j, command=lambda id=j: self.clicked_to_delete(id, root)).grid(row=q+6, column=r))
+                    self.b_branch_list.append(ttk.Button(root_del, text=j, command=lambda id=j: self.clicked_to_delete(id, root, root_del)).grid(row=q+6, column=r))
 
                 self.b_branch_list[len(self.b_branch_list)-1]
                 arrange += 1
