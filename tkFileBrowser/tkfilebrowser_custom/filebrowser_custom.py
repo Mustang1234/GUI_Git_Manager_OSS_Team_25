@@ -1871,11 +1871,10 @@ class FileBrowser(tk.Toplevel):
         else:
             print("fatal: not a git repository (or any of the parent directories): .git")
     
-    def clicked_to_delete(self, branch_name, root, root_del):
+    def clicked_to_delete(self, curbr, branch_name, root, root_del):
             dir=self.getdir()
             try:
                 result = subprocess.run(['git', 'branch', '-d', branch_name], cwd=dir, stderr=subprocess.PIPE)
-
                 result.check_returncode()
 
                 if result.returncode == 0:
@@ -1889,16 +1888,19 @@ class FileBrowser(tk.Toplevel):
                     root.destroy()
             
             except subprocess.CalledProcessError as e:
-                if e.stderr:
-                    error_message = e.stderr.strip()
+                if branch_name == curbr :
+                    error_message = "You cannot delete the current branch (head branch).\nIf you want to delete the current branch, please checkout to another branch and press the delete button again to select the branch you want to delete."
                     messagebox.showerror("Error", error_message)
+                elif e.stderr:
+                    error_message = e.stderr.strip()
+                    messagebox.showerror("Error", error_message)   
                 else:
                     print(str(e))
             
     def delete_branch(self, root):
         #branch 버튼을 클릭하면 새 창 띄우고 깃의 모든 원격 브랜치와 로컬 브랜치 리스트 버튼 보여주기
         if self.is_git_repo():
-            cmd, cmdL, i, j, headbr, curbr = self.return_branch_list()
+            cmd, cmdL, i, j, headbr, curbr = self.return_branch_list()  #headbr=remote, curbr=local
             # 브랜치 새 창 띄우기
             root_del = tk.Tk()
             style = ttk.Style(root_del)
@@ -1918,12 +1920,12 @@ class FileBrowser(tk.Toplevel):
                     if i == headbr[-1]:     # 헤드가 가리키는 원격 브랜치 색 바꾸기
                         style.configure("Custom.TButton", foreground="red")
 
-                        head_remote = ttk.Button(root_del, text=i, command=lambda id=i: self.clicked_to_delete(id, root, root_del), style="Custom.TButton")
+                        head_remote = ttk.Button(root_del, text=i, command=lambda id=i: self.clicked_to_delete(curbr, id, root, root_del), style="Custom.TButton")
                         head_remote.grid(row=q+3, column=r)
 
                         self.b_branch_list.append(head_remote)
                     else:
-                        self.b_branch_list.append(ttk.Button(root_del, text=i, command=lambda id=i: self.clicked_to_delete(id, root, root_del)).grid(row=q+3, column=r))
+                        self.b_branch_list.append(ttk.Button(root_del, text=i, command=lambda id=i: self.clicked_to_delete(curbr, id, root, root_del)).grid(row=q+3, column=r))
                     
                     self.b_branch_list[len(self.b_branch_list)-1]
                     arrange += 1
@@ -1948,12 +1950,12 @@ class FileBrowser(tk.Toplevel):
                 if j == curbr :
                     style.configure("Custom.TButton", foreground="red")
 
-                    head_local = ttk.Button(root_del, text=j, command=lambda id=j: self.clicked_to_delete(id, root, root_del), style="Custom.TButton")
+                    head_local = ttk.Button(root_del, text=j, command=lambda id=j: self.clicked_to_delete(curbr, id, root, root_del), style="Custom.TButton")
                     head_local.grid(row=q+6, column=r)
 
                     self.b_branch_list.append(head_local)
                 else:
-                    self.b_branch_list.append(ttk.Button(root_del, text=j, command=lambda id=j: self.clicked_to_delete(id, root, root_del)).grid(row=q+6, column=r))
+                    self.b_branch_list.append(ttk.Button(root_del, text=j, command=lambda id=j: self.clicked_to_delete(curbr, id, root, root_del)).grid(row=q+6, column=r))
 
                 self.b_branch_list[len(self.b_branch_list)-1]
                 arrange += 1
