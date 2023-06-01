@@ -1806,8 +1806,8 @@ class FileBrowser(tk.Toplevel):
             ttk.Label(root, text="Git Branch Function").grid(columnspan=5, padx=60, pady=10, sticky='ew')
             ttk.Button(root, text="Create Branch", command=lambda: self.create_branch(root)).grid(column=0, columnspan=5)
             ttk.Button(root, text="Delete Branch", command=lambda: self.delete_branch(root)).grid(column=0, pady=8, columnspan=5)
-            ttk.Button(root, text="Rename Branch", command=self.rename_branch).grid(column=0, columnspan=5)
-            ttk.Button(root, text="Checkout Branch", command=self.checkout_branch).grid(column=0, pady=8, columnspan=5)
+            ttk.Button(root, text="Rename Branch", command=lambda: self.rename_branch(root)).grid(column=0, columnspan=5)
+            ttk.Button(root, text="Checkout Branch", command=lambda: self.checkout_branch(root)).grid(column=0, pady=8, columnspan=5)
             ttk.Button(root, text="Merge Branch", command=self.merge_branch).grid(column=0, columnspan=5)
 
             
@@ -1962,7 +1962,7 @@ class FileBrowser(tk.Toplevel):
         else:
             self.b_branch_list=[]
 
-    def clicked_to_rename(self, old_branch_name,root):
+    def clicked_to_rename(self, old_branch_name, root, root_ren):
             dir=self.getdir()
             
             new_branch_name=tk.simpledialog.askstring("Rename Branch", "Enter the new branch name for rename the branch:")
@@ -1976,8 +1976,10 @@ class FileBrowser(tk.Toplevel):
                         messagebox.showinfo("Git rename Message", "Rename successful! Now [ " + old_branch_name + " ] branch is [ " + new_branch_name + " ] branch.")
                         self.update_status()
                 
-                        root.destroy()  # 만약 실행 후 창을 닫고 싶으면 이 줄만 실행
-                        self.rename_branch() # 만약 새로 고침을 하고 싶다면 이 줄도 추가 
+                        root_ren.destroy()  # 만약 실행 후 창을 닫고 싶으면 이 줄만 실행
+                        self.rename_branch(root) # 만약 새로 고침을 하고 싶다면 이 줄도 추가 
+
+                        root.destroy()
 
                 except subprocess.CalledProcessError as e:
                     if e.stderr:
@@ -1992,19 +1994,19 @@ class FileBrowser(tk.Toplevel):
             
                
                         
-    def rename_branch(self):
+    def rename_branch(self, root):
         #branch 버튼을 클릭하면 새 창 띄우고 깃의 모든 원격 브랜치와 로컬 브랜치 리스트 버튼 보여주기
         if self.is_git_repo():
             cmd, cmdL, i, j, headbr, curbr = self.return_branch_list()
             # 브랜치 새 창 띄우기
-            root = tk.Tk()
-            style = ttk.Style(root)
+            root_ren = tk.Tk()
+            style = ttk.Style(root_ren)
             style.theme_use("clam")
-            print(root)
-            root.configure(bg=style.lookup('TFrame', 'background'))
-            ttk.Label(root, text="Select one branch you want to rename.").grid(row=0, column=0, columnspan=5)
-            ttk.Label(root, text=" ").grid(row=1, column=0, columnspan=5)
-            ttk.Label(root, text="[Remote branch]").grid(row=2, column=0, columnspan=5)
+            print(root_ren)
+            root_ren.configure(bg=style.lookup('TFrame', 'background'))
+            ttk.Label(root_ren, text="Select one branch you want to rename.").grid(row=0, column=0, columnspan=5)
+            ttk.Label(root_ren, text=" ").grid(row=1, column=0, columnspan=5)
+            ttk.Label(root_ren, text="[Remote branch]").grid(row=2, column=0, columnspan=5)
 
             arrange=0   # 원격 브랜치 나타내기
             if i>0: # 원격 브랜치가 있을 때
@@ -2015,27 +2017,27 @@ class FileBrowser(tk.Toplevel):
                     if i == headbr[-1]:     # 헤드가 가리키는 원격 브랜치 색 바꾸기
                         style.configure("Custom.TButton", foreground="red")
 
-                        head_remote = ttk.Button(root, text=i, command=lambda id=i: self.clicked_to_rename(id,root), style="Custom.TButton")
+                        head_remote = ttk.Button(root_ren, text=i, command=lambda id=i: self.clicked_to_rename(id,root,root_ren), style="Custom.TButton")
                         head_remote.grid(row=q+3, column=r)
 
                         self.b_branch_list.append(head_remote)
                     else:
-                        self.b_branch_list.append(ttk.Button(root, text=i, command=lambda id=i: self.clicked_to_rename(id,root)).grid(row=q+3, column=r))
+                        self.b_branch_list.append(ttk.Button(root_ren, text=i, command=lambda id=i: self.clicked_to_rename(id,root,root_ren)).grid(row=q+3, column=r))
                     
                     self.b_branch_list[len(self.b_branch_list)-1]
                     arrange += 1
 
                     
             else: # 원격 브랜치가 없을 때
-                ttk.Label(root, text="There is no remote branch yet.", foreground="blue").grid(row=3, column=0, columnspan=5)
-                ttk.Label(root, text=" ").grid(row=4, column=0, columnspan=5)          
-                ttk.Label(root, text="[Local branch]").grid(row=5, column=0, columnspan=5)
+                ttk.Label(root_ren, text="There is no remote branch yet.", foreground="blue").grid(row=3, column=0, columnspan=5)
+                ttk.Label(root_ren, text=" ").grid(row=4, column=0, columnspan=5)          
+                ttk.Label(root_ren, text="[Local branch]").grid(row=5, column=0, columnspan=5)
             
 
             # 로컬 브랜치 나타내기
             q,r=divmod(arrange,5)
-            ttk.Label(root, text=" ").grid(row=q+4, column=0, columnspan=5)
-            ttk.Label(root, text="[Local branch]").grid(row=q+5, column=0, columnspan=5)
+            ttk.Label(root_ren, text=" ").grid(row=q+4, column=0, columnspan=5)
+            ttk.Label(root_ren, text="[Local branch]").grid(row=q+5, column=0, columnspan=5)
                 
             arr=0
             button_num=1
@@ -2046,12 +2048,12 @@ class FileBrowser(tk.Toplevel):
                 if j == curbr :
                     style.configure("Custom.TButton", foreground="red")
 
-                    head_local = ttk.Button(root, text=j, command=lambda id=j: self.clicked_to_rename(id,root), style="Custom.TButton")
+                    head_local = ttk.Button(root_ren, text=j, command=lambda id=j: self.clicked_to_rename(id,root,root_ren), style="Custom.TButton")
                     head_local.grid(row=q+6, column=r)
 
                     self.b_branch_list.append(head_local)
                 else:
-                    self.b_branch_list.append(ttk.Button(root, text=j, command=lambda id=j: self.clicked_to_rename(id,root)).grid(row=q+6, column=r))
+                    self.b_branch_list.append(ttk.Button(root_ren, text=j, command=lambda id=j: self.clicked_to_rename(id,root,root_ren)).grid(row=q+6, column=r))
 
                 self.b_branch_list[len(self.b_branch_list)-1]
                 arrange += 1
@@ -2061,7 +2063,7 @@ class FileBrowser(tk.Toplevel):
         
         
 
-    def clicked_to_checkout(self, branch_name, root):
+    def clicked_to_checkout(self, branch_name, root, root_che):
         dir = self.getdir()
 
         try:
@@ -2073,8 +2075,10 @@ class FileBrowser(tk.Toplevel):
                 # checkout이 정상적으로 수행되었을 때 확인 메세지창
                 messagebox.showinfo("Git Checkout Message", "Checkout successful! Now you are in [ " + branch_name + " ] branch.")
                 
-                root.destroy()  # 만약 실행 후 창을 닫고 싶으면 이 줄만 실행
-                self.checkout_branch() # 만약 새로 고침을 하고 싶다면 이 줄도 추가 
+                root_che.destroy()  # 만약 실행 후 창을 닫고 싶으면 이 줄만 실행
+                self.checkout_branch(root) # 만약 새로 고침을 하고 싶다면 이 줄도 추가
+
+                root.destroy()
             
         except subprocess.CalledProcessError as e:
             # 오류가 발생한 경우 오류 메시지창 띄우기
@@ -2085,20 +2089,20 @@ class FileBrowser(tk.Toplevel):
                 print(str(e))
 
 
-    def checkout_branch(self):
+    def checkout_branch(self, root):
         #branch 버튼을 클릭하면 새 창 띄우고 깃의 모든 원격 브랜치와 로컬 브랜치 리스트 버튼 보여주기
         if self.is_git_repo():
             cmd, cmdL, i, j, headbr, curbr = self.return_branch_list()
             
             # 브랜치 새 창 띄우기
-            root = tk.Tk()
-            style = ttk.Style(root)
+            root_che = tk.Tk()
+            style = ttk.Style(root_che)
             style.theme_use("clam")
-            print(root)
-            root.configure(bg=style.lookup('TFrame', 'background'))
-            ttk.Label(root, text="Select one branch you want to checkout").grid(row=0, column=0, columnspan=5)
-            ttk.Label(root, text=" ").grid(row=1, column=0, columnspan=5)
-            ttk.Label(root, text="[Remote branch]").grid(row=2, column=0, columnspan=5)
+            print(root_che)
+            root_che.configure(bg=style.lookup('TFrame', 'background'))
+            ttk.Label(root_che, text="Select one branch you want to checkout").grid(row=0, column=0, columnspan=5)
+            ttk.Label(root_che, text=" ").grid(row=1, column=0, columnspan=5)
+            ttk.Label(root_che, text="[Remote branch]").grid(row=2, column=0, columnspan=5)
 
             arrange=0   # 원격 브랜치 나타내기
             if i>0: # 원격 브랜치가 있을 때
@@ -2109,27 +2113,27 @@ class FileBrowser(tk.Toplevel):
                     if i == headbr[-1]:     # 헤드가 가리키는 원격 브랜치 색 바꾸기
                         style.configure("Custom.TButton", foreground="red")
 
-                        head_remote = ttk.Button(root, text=i, command=lambda id=i: self.clicked_to_checkout(id, root), style="Custom.TButton")
+                        head_remote = ttk.Button(root_che, text=i, command=lambda id=i: self.clicked_to_checkout(id, root, root_che), style="Custom.TButton")
                         head_remote.grid(row=q+3, column=r)
 
                         self.b_branch_list.append(head_remote)
                     else:
-                        self.b_branch_list.append(ttk.Button(root, text=i, command=lambda id=i: self.clicked_to_checkout(id, root)).grid(row=q+3, column=r))
+                        self.b_branch_list.append(ttk.Button(root_che, text=i, command=lambda id=i: self.clicked_to_checkout(id, root, root_che)).grid(row=q+3, column=r))
                     
                     self.b_branch_list[len(self.b_branch_list)-1]
                     arrange += 1
 
                     
             else: # 원격 브랜치가 없을 때
-                ttk.Label(root, text="There is no remote branch yet.", foreground="blue").grid(row=3, column=0, columnspan=5)
-                ttk.Label(root, text=" ").grid(row=4, column=0, columnspan=5)          
-                ttk.Label(root, text="[Local branch]").grid(row=5, column=0, columnspan=5)
+                ttk.Label(root_che, text="There is no remote branch yet.", foreground="blue").grid(row=3, column=0, columnspan=5)
+                ttk.Label(root_che, text=" ").grid(row=4, column=0, columnspan=5)          
+                ttk.Label(root_che, text="[Local branch]").grid(row=5, column=0, columnspan=5)
             
 
             # 로컬 브랜치 나타내기
             q,r=divmod(arrange,5)
-            ttk.Label(root, text=" ").grid(row=q+4, column=0, columnspan=5)
-            ttk.Label(root, text="[Local branch]").grid(row=q+5, column=0, columnspan=5)
+            ttk.Label(root_che, text=" ").grid(row=q+4, column=0, columnspan=5)
+            ttk.Label(root_che, text="[Local branch]").grid(row=q+5, column=0, columnspan=5)
                 
             arr=0
             for j in cmdL:
@@ -2139,12 +2143,12 @@ class FileBrowser(tk.Toplevel):
                 if j == curbr :
                     style.configure("Custom.TButton", foreground="red")
 
-                    head_local = ttk.Button(root, text=j, command=lambda id=j: self.clicked_to_checkout(id, root), style="Custom.TButton")
+                    head_local = ttk.Button(root_che, text=j, command=lambda id=j: self.clicked_to_checkout(id, root, root_che), style="Custom.TButton")
                     head_local.grid(row=q+6, column=r)
 
                     self.b_branch_list.append(head_local)
                 else:
-                    self.b_branch_list.append(ttk.Button(root, text=j, command=lambda id=j: self.clicked_to_checkout(id, root)).grid(row=q+6, column=r))
+                    self.b_branch_list.append(ttk.Button(root_che, text=j, command=lambda id=j: self.clicked_to_checkout(id, root, root_che)).grid(row=q+6, column=r))
 
                 self.b_branch_list[len(self.b_branch_list)-1]
                 arrange += 1
