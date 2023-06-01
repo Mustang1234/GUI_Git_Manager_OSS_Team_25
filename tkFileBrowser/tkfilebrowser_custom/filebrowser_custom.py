@@ -1884,7 +1884,7 @@ class FileBrowser(tk.Toplevel):
                     self.update_status()
                     
                     root_del.destroy()  # 만약 실행 후 창을 닫고 싶으면 이 줄만 실행
-                    self.delete_branch(root) # 만약 새로 고침을 하고 싶다면 이 줄도 추가
+                    #self.delete_branch(root) # 만약 새로 고침을 하고 싶다면 이 줄도 추가
 
                     root.destroy()
             
@@ -1977,7 +1977,7 @@ class FileBrowser(tk.Toplevel):
                         self.update_status()
                 
                         root_ren.destroy()  # 만약 실행 후 창을 닫고 싶으면 이 줄만 실행
-                        self.rename_branch(root) # 만약 새로 고침을 하고 싶다면 이 줄도 추가 
+                        #self.rename_branch(root) # 만약 새로 고침을 하고 싶다면 이 줄도 추가 
 
                         root.destroy()
 
@@ -2076,7 +2076,7 @@ class FileBrowser(tk.Toplevel):
                 messagebox.showinfo("Git Checkout Message", "Checkout successful! Now you are in [ " + branch_name + " ] branch.")
                 
                 root_che.destroy()  # 만약 실행 후 창을 닫고 싶으면 이 줄만 실행
-                self.checkout_branch(root) # 만약 새로 고침을 하고 싶다면 이 줄도 추가
+                #self.checkout_branch(root) # 만약 새로 고침을 하고 싶다면 이 줄도 추가
 
                 root.destroy()
             
