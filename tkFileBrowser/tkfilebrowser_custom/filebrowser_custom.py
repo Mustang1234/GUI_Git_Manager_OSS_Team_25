@@ -2199,12 +2199,12 @@ class FileBrowser(tk.Toplevel):
                     print(root_unm)
                     root_unm.configure(bg=style.lookup('TFrame', 'background'))    
                     for n in range(len(unmerged_path)):
-                        ttk.Label(root_unm, text=unmerged_path[n]).grid(row=n, column=0, columnspan=5)
+                        ttk.Label(root_unm, text=unmerged_path[n]).grid(row=n, column=0, padx=10, pady=5, sticky="w")
                     
                     msg_row = len(unmerged_path) + 1
-                    ttk.Label(root_unm, text=" ").grid(row=msg_row, column=0, columnspan=5)
-                    msg_text = "Fix these files directly to prevent conflicts. Please press the merge button again after solving it."
-                    ttk.Label(root_unm, text=msg_text).grid(row=msg_row+1, column=0, columnspan=5)
+                    ttk.Label(root_unm, text=" ").grid(row=msg_row, column=0, padx=10, sticky="w")
+                    msg_text = "Fix these files directly to prevent conflicts.\nPlease press the merge button again after solving it."
+                    ttk.Label(root_unm, text=msg_text).grid(row=msg_row+1, column=0, padx=10, pady=5, sticky="w")
                     subprocess.run(['git', 'merge', '--abort'], cwd=dir)
 
 
