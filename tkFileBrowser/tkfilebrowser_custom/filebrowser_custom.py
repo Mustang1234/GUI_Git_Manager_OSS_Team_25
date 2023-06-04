@@ -1790,6 +1790,19 @@ class FileBrowser(tk.Toplevel):
             pack_canvas.pack(side="left")
             pack_scrollbar.pack(side="right", fill="y")
             
+        if self.is_git_repo():
+            container, canvas, scrollbar, scrollable_frame = open_scrolls()
+            logs=[_[:_.index(" ")] for _ in subprocess.run(['git', 'log', '--pretty=oneline'], cwd=self._get_git_directory(), capture_output=True).stdout.decode().strip().split("\n")]
+            glog=[_ for _ in subprocess.run(['git', 'log', '--pretty=oneline', '--graph'], cwd=self._get_git_directory(), capture_output=True).stdout.decode().strip().split("\n")]
+            for i in range(len(glog)):
+                graph=glog[i]
+                for j in range(len(logs)):
+                    if logs[j] in glog[i]:
+                        graph=glog[i][:glog[i].index(logs[j])]
+                        ttk.Button(scrollable_frame, text=logs[j], command=exit).grid(column=1, row=i, sticky="w")
+                        break
+                ttk.Label(scrollable_frame, text=graph).grid(column=0, row=i, sticky="w")
+            pack_scrolls(container, canvas, scrollbar)
 
 
     def clone(self):
