@@ -1768,29 +1768,29 @@ class FileBrowser(tk.Toplevel):
 
     def branch(self):
         # 브렌치 창 만들어서 브렌치 띄우는 기능, merge, create, delete 포함!!
-        if self.is_git_repo():
-            self.b_branch_update.pack(side="left")
-            self.b_branch_colon.pack(side="left")
-            cmd=subprocess.run(['git', 'branch' , '-r'], cwd=self._get_git_directory(), capture_output=True).stdout.decode().strip().split("\n")
-            for i in range(len(cmd)):
-                if i>=len(cmd):
-                    break
-                cmd[i].replace(" ", "")
-                if "->" in cmd[i]:
-                    del cmd[i]
-            for i in cmd:
-                self.b_branch_list.append(ttk.Button(self.frame_buttons1, text=i))
-                self.b_branch_list[len(self.b_branch_list)-1].pack(side="left",padx=(0,3))
-        else:
-            self.b_branch_update.pack_forget()
-            self.b_branch_colon.pack_forget()
-            for i in self.b_branch_list:
-                i.pack_forget()
-            self.b_branch_list=[]
+        pass
 
     def log(self):
-        pass
-        # 로그 창 만들어서 로그 띄우는 기능
+        def open_scrolls():
+            root = tk.Tk()
+            style = ttk.Style(root)
+            style.theme_use("clam")
+            root.configure(bg=style.lookup('TFrame', 'background'))
+            container = ttk.Frame(root)
+            canvas = tk.Canvas(container, height=750)
+            scrollbar = ttk.Scrollbar(container, orient="vertical", command=canvas.yview)
+            scrollable_frame = ttk.Frame(canvas)
+            scrollable_frame.bind()
+            canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+            canvas.configure(yscrollcommand=scrollbar.set)
+            return container, canvas, scrollbar, scrollable_frame
+
+        def pack_scrolls(pack_container, pack_canvas, pack_scrollbar):
+            pack_container.pack()
+            pack_canvas.pack(side="left")
+            pack_scrollbar.pack(side="right", fill="y")
+            
+
 
     def clone(self):
         pass
