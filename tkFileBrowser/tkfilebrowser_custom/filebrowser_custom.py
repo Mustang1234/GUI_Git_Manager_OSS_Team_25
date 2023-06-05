@@ -1780,15 +1780,15 @@ class FileBrowser(tk.Toplevel):
             canvas = tk.Canvas(container, height=750)
             scrollbar = ttk.Scrollbar(container, orient="vertical", command=canvas.yview)
             scrollable_frame = ttk.Frame(canvas)
-            scrollable_frame.bind()
+            scrollable_frame.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
             canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
             canvas.configure(yscrollcommand=scrollbar.set)
             return container, canvas, scrollbar, scrollable_frame
 
-        def pack_scrolls(pack_container, pack_canvas, pack_scrollbar):
-            pack_container.pack()
-            pack_canvas.pack(side="left")
-            pack_scrollbar.pack(side="right", fill="y")
+        def pack_scrolls(container, canvas, scrollbar):
+            container.pack()
+            canvas.pack(side="left")
+            scrollbar.pack(side="right", fill="y")
             
         def spec(commit_hash):
             container, canvas, scrollbar, scrollable_frame = open_scrolls()
