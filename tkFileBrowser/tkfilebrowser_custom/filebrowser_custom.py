@@ -1836,8 +1836,6 @@ class FileBrowser(tk.Toplevel):
                     curbr = cmdL[j]
             
             return cmd, cmdL, i, j, headbr, curbr   
-    
-    #def show_branch_list(self):
             
     def create_branch(self, root):
         dir = self.getdir()
@@ -2285,7 +2283,7 @@ class FileBrowser(tk.Toplevel):
         if self.is_git_repo():
             # 헤드가 가리키는 로컬 브랜치 나타내기
             style = ttk.Style()
-            style.configure("Custom.TButton", background="cyan")
+            style.configure("Custom.TButton", foreground="red")
             self.b_branch_head.configure(style="Custom.TButton")
             self.b_branch_head.pack(side="right", padx=(0,4))
             cmd, cmdL, i, j, headbr, curbr = self.return_branch_list()
