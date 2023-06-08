@@ -1777,25 +1777,26 @@ class FileBrowser(tk.Toplevel):
             style.theme_use("clam")
             root.configure(bg=style.lookup('TFrame', 'background'))
             container = ttk.Frame(root)
-            canvas = tk.Canvas(container, height=750)
+            canvas = tk.Canvas(container, height=750, width=800)
             scrollbar = ttk.Scrollbar(container, orient="vertical", command=canvas.yview)
             scrollable_frame = ttk.Frame(canvas)
             scrollable_frame.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
             canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
             canvas.configure(yscrollcommand=scrollbar.set)
             return container, canvas, scrollbar, scrollable_frame
-
+        
         def pack_scrolls(container, canvas, scrollbar):
             container.pack()
             canvas.pack(side="left")
             scrollbar.pack(side="right", fill="y")
             
         def spec(commit_hash):
-            container, canvas, scrollbar, scrollable_frame = open_scrolls()
-            specs=[_ for _ in subprocess.run(['git', 'show', commit_hash], cwd=self._get_git_directory(), capture_output=True).stdout.decode().strip().split("\n")]
+            print(commit_hash)
+            """container, canvas, scrollbar, scrollable_frame = open_scrolls()
+            specs=[_ for _ in subprocess.run(['git', 'log', '-1', '-U', commit_hash], cwd=self._get_git_directory(), capture_output=True).stdout.decode().strip().split("\n")]
             for i in range(len(specs)):
                 ttk.Label(scrollable_frame, text=specs[i]).grid(row=i+2, column=0, sticky="w")
-            pack_scrolls(container, canvas, scrollbar)
+            pack_scrolls(container, canvas, scrollbar)"""
 
         if self.is_git_repo():
             container, canvas, scrollbar, scrollable_frame = open_scrolls()
@@ -1806,11 +1807,13 @@ class FileBrowser(tk.Toplevel):
                 for j in range(len(logs)):
                     if logs[j] in glog[i]:
                         graph=glog[i][:glog[i].index(logs[j])]
-                        ttk.Button(scrollable_frame, text=logs[j], command=lambda: spec(logs[j])).grid(column=1, row=i, sticky="w")
+                        ttk.Button(scrollable_frame, text=logs[j][:7], command=lambda: spec(logs[j])).grid(column=1, row=i, sticky="w")
+                        ttk.Label(scrollable_frame, text=glog[i][glog[i].index(logs[j])+40:glog[i].index(logs[j])+140]).grid(column=2, row=i, sticky="w")
                         break
-                ttk.Label(scrollable_frame, text=graph).grid(column=0, row=i, sticky="w")
+                label1=ttk.Label(scrollable_frame, text=graph)
+                label1.grid(column=0, row=i, sticky="w")
+                label1.config(font=("Courier", 20))
             pack_scrolls(container, canvas, scrollbar)
-
 
     def clone(self):
         pass
