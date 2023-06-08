@@ -1920,12 +1920,12 @@ class FileBrowser(tk.Toplevel):
                     if i == headbr[-1]:     # 헤드가 가리키는 원격 브랜치 색 바꾸기
                         style.configure("Custom.TButton", foreground="red")
 
-                        head_remote = ttk.Button(root_del, text=i, command=lambda id=i: self.clicked_to_delete(curbr, id, root, root_del), style="Custom.TButton")
+                        head_remote = ttk.Button(root_del, text=i, style="Custom.TButton")
                         head_remote.grid(row=q+3, column=r)
 
                         self.b_branch_list.append(head_remote)
                     else:
-                        self.b_branch_list.append(ttk.Button(root_del, text=i, command=lambda id=i: self.clicked_to_delete(curbr, id, root, root_del)).grid(row=q+3, column=r))
+                        self.b_branch_list.append(ttk.Button(root_del, text=i).grid(row=q+3, column=r))
                     
                     self.b_branch_list[len(self.b_branch_list)-1]
                     arrange += 1
@@ -2019,12 +2019,12 @@ class FileBrowser(tk.Toplevel):
                     if i == headbr[-1]:     # 헤드가 가리키는 원격 브랜치 색 바꾸기
                         style.configure("Custom.TButton", foreground="red")
 
-                        head_remote = ttk.Button(root_ren, text=i, command=lambda id=i: self.clicked_to_rename(id,root,root_ren), style="Custom.TButton")
+                        head_remote = ttk.Button(root_ren, text=i, style="Custom.TButton")
                         head_remote.grid(row=q+3, column=r)
 
                         self.b_branch_list.append(head_remote)
                     else:
-                        self.b_branch_list.append(ttk.Button(root_ren, text=i, command=lambda id=i: self.clicked_to_rename(id,root,root_ren)).grid(row=q+3, column=r))
+                        self.b_branch_list.append(ttk.Button(root_ren, text=i).grid(row=q+3, column=r))
                     
                     self.b_branch_list[len(self.b_branch_list)-1]
                     arrange += 1
@@ -2118,12 +2118,12 @@ class FileBrowser(tk.Toplevel):
                     if i == headbr[-1]:     # 헤드가 가리키는 원격 브랜치 색 바꾸기
                         style.configure("Custom.TButton", foreground="red")
 
-                        head_remote = ttk.Button(root_che, text=i, command=lambda id=i: self.clicked_to_checkout("Y", id, root, root_che), style="Custom.TButton")
+                        head_remote = ttk.Button(root_che, text=i, style="Custom.TButton")
                         head_remote.grid(row=q+3, column=r)
 
                         self.b_branch_list.append(head_remote)
                     else:
-                        self.b_branch_list.append(ttk.Button(root_che, text=i, command=lambda id=i: self.clicked_to_checkout("N", id, root, root_che)).grid(row=q+3, column=r))
+                        self.b_branch_list.append(ttk.Button(root_che, text=i).grid(row=q+3, column=r))
                     
                     self.b_branch_list[len(self.b_branch_list)-1]
                     arrange += 1
@@ -2236,12 +2236,12 @@ class FileBrowser(tk.Toplevel):
                     if i == headbr[-1]:     # 헤드가 가리키는 원격 브랜치 색 바꾸기
                         style.configure("Custom.TButton", foreground="red")
 
-                        head_remote = ttk.Button(root_mer, text=i, command=lambda id=i: self.clicked_to_merge(id, root, root_mer), style="Custom.TButton")
+                        head_remote = ttk.Button(root_mer, text=i, style="Custom.TButton")
                         head_remote.grid(row=q+3, column=r)
 
                         self.b_branch_list.append(head_remote)
                     else:
-                        self.b_branch_list.append(ttk.Button(root_mer, text=i, command=lambda id=i: self.clicked_to_merge(id, root, root_mer)).grid(row=q+3, column=r))
+                        self.b_branch_list.append(ttk.Button(root_mer, text=i).grid(row=q+3, column=r))
                     
                     self.b_branch_list[len(self.b_branch_list)-1]
                     arrange += 1
