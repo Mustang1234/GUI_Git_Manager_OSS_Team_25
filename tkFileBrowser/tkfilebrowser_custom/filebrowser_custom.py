@@ -1791,12 +1791,11 @@ class FileBrowser(tk.Toplevel):
             scrollbar.pack(side="right", fill="y")
             
         def spec(commit_hash):
-            print(commit_hash)
-            """container, canvas, scrollbar, scrollable_frame = open_scrolls()
-            specs=[_ for _ in subprocess.run(['git', 'log', '-1', '-U', commit_hash], cwd=self._get_git_directory(), capture_output=True).stdout.decode().strip().split("\n")]
+            container, canvas, scrollbar, scrollable_frame = open_scrolls()
+            specs=[_ for _ in subprocess.run(['git', 'log', '-1', '-U', commit_hash], cwd=self._get_git_directory(), capture_output=True).stdout.decode().strip().split("\n")][:100]
             for i in range(len(specs)):
                 ttk.Label(scrollable_frame, text=specs[i]).grid(row=i+2, column=0, sticky="w")
-            pack_scrolls(container, canvas, scrollbar)"""
+            pack_scrolls(container, canvas, scrollbar)
 
         if self.is_git_repo():
             container, canvas, scrollbar, scrollable_frame = open_scrolls()
@@ -1812,7 +1811,7 @@ class FileBrowser(tk.Toplevel):
                         break
                 label1=ttk.Label(scrollable_frame, text=graph)
                 label1.grid(column=0, row=i, sticky="w")
-                label1.config(font=("Courier", 20))
+                label1.config(font=("Courier", 18))
             pack_scrolls(container, canvas, scrollbar)
 
     def clone(self):
