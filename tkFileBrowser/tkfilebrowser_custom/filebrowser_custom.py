@@ -1806,12 +1806,12 @@ class FileBrowser(tk.Toplevel):
                 for j in range(len(logs)):
                     if logs[j] in glog[i]:
                         graph=glog[i][:glog[i].index(logs[j])]
-                        ttk.Button(scrollable_frame, text=logs[j][:7], command=lambda: spec(logs[j])).grid(column=1, row=i, sticky="w")
+                        ttk.Button(scrollable_frame, text=logs[j][:7], command=(lambda d: lambda: spec(d))(logs[j])).grid(column=1, row=i, sticky="w")
                         ttk.Label(scrollable_frame, text=glog[i][glog[i].index(logs[j])+40:glog[i].index(logs[j])+140]).grid(column=2, row=i, sticky="w")
                         break
-                label1=ttk.Label(scrollable_frame, text=graph)
-                label1.grid(column=0, row=i, sticky="w")
-                label1.config(font=("Courier", 18))
+                label=ttk.Label(scrollable_frame, text=graph)
+                label.grid(column=0, row=i, sticky="w")
+                label.config(font=("Courier", 18))
             pack_scrolls(container, canvas, scrollbar)
 
     def clone(self):
