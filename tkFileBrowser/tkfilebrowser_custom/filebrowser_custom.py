@@ -1836,8 +1836,6 @@ class FileBrowser(tk.Toplevel):
                     curbr = cmdL[j]
             
             return cmd, cmdL, i, j, headbr, curbr   
-    
-    #def show_branch_list(self):
             
     def create_branch(self, root):
         dir = self.getdir()
