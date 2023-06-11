@@ -2281,48 +2281,45 @@ class FileBrowser(tk.Toplevel):
             self.b_log.pack_forget()
 
     def log(self):
-        def open_scrolls():
+        def open_scrolls(width, height):
             root = tk.Tk()
             style = ttk.Style(root)
             style.theme_use("clam")
             root.configure(bg=style.lookup('TFrame', 'background'))
             container = ttk.Frame(root)
-            canvas = tk.Canvas(container, height=750, width=800)
-            scrollbar = ttk.Scrollbar(container, orient="vertical", command=canvas.yview)
-            scrollable_frame = ttk.Frame(canvas)
-            scrollable_frame.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
-            canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
-            canvas.configure(yscrollcommand=scrollbar.set)
-            return container, canvas, scrollbar, scrollable_frame
-        
-        def pack_scrolls(container, canvas, scrollbar):
+            canvas = tk.Canvas(container, width=max(min(800, width),200), height=max(min(500, height),100))
+            scrollbar_Y = ttk.Scrollbar(container, orient="vertical", command=canvas.yview)
+            scrollbar_X = ttk.Scrollbar(container, orient="horizontal", command=canvas.xview)
+            frame = ttk.Frame(canvas)
+            frame.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
+            canvas.create_window((0, 0), window=frame, anchor="nw")
+            canvas.configure(yscrollcommand=scrollbar_Y.set, xscrollcommand=scrollbar_X.set)
+            scrollbar_Y.pack(side="right", fill="y")
+            scrollbar_X.pack(side="bottom", fill="x")
+            canvas.pack(side="bottom")
             container.pack()
-            canvas.pack(side="left")
-            scrollbar.pack(side="right", fill="y")
-            
+            return frame
+                    
         def spec(commit_hash):
-            container, canvas, scrollbar, scrollable_frame = open_scrolls()
             specs=[_ for _ in subprocess.run(['git', 'log', '-1', '-U', commit_hash], cwd=self._get_git_directory(), capture_output=True).stdout.decode().strip().split("\n")][:100]
+            frame = open_scrolls(len(max(specs, key=len)*6), len(specs)*6)
             for i in range(len(specs)):
-                ttk.Label(scrollable_frame, text=specs[i]).grid(row=i+2, column=0, sticky="w")
-            pack_scrolls(container, canvas, scrollbar)
+                ttk.Label(frame, text=specs[i]).grid(row=i+2, column=0, sticky="w")
 
         if self.is_git_repo():
-            container, canvas, scrollbar, scrollable_frame = open_scrolls()
             logs=[_[:_.index(" ")] for _ in subprocess.run(['git', 'log', '--pretty=oneline'], cwd=self._get_git_directory(), capture_output=True).stdout.decode().strip().split("\n")]
             glog=[_ for _ in subprocess.run(['git', 'log', '--pretty=oneline', '--graph'], cwd=self._get_git_directory(), capture_output=True).stdout.decode().strip().split("\n")]
+            frame = open_scrolls(len(max(glog, key=len)*5), len(glog)*5)
             for i in range(len(glog)):
                 graph=glog[i]
                 for j in range(len(logs)):
                     if logs[j] in glog[i]:
                         graph=glog[i][:glog[i].index(logs[j])]
-                        ttk.Button(scrollable_frame, text=logs[j][:7], command=(lambda d: lambda: spec(d))(logs[j])).grid(column=1, row=i, sticky="w")
-                        ttk.Label(scrollable_frame, text=glog[i][glog[i].index(logs[j])+40:glog[i].index(logs[j])+140]).grid(column=2, row=i, sticky="w")
+                        ttk.Button(frame, text=logs[j][:7], command=(lambda d: lambda: spec(d))(logs[j])).grid(column=1, row=i, sticky="w")
+                        ttk.Label(frame, text=glog[i][glog[i].index(logs[j])+40:glog[i].index(logs[j])+140]).grid(column=2, row=i, sticky="w")
                         break
-                label=ttk.Label(scrollable_frame, text=graph)
+                label=ttk.Label(frame, text=graph, font=("Courier", 15))
                 label.grid(column=0, row=i, sticky="w")
-                label.config(font=("Courier", 18))
-            pack_scrolls(container, canvas, scrollbar)
 
     def clone(self):
         pass
