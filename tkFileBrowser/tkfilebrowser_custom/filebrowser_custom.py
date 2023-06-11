@@ -277,8 +277,7 @@ class FileBrowser(tk.Toplevel):
         self.b_branch = ttk.Button(self.frame_buttons1, text="Branch",
                                        command=self.branch_function)
         self.b_branch_list=[]
-        self.l_branch_head = ttk.Label(self.frame_buttons1, text="no")
-        self.l_branch_head_update = ttk.Button(self.frame_buttons1, image=self.git_status_update, command=self.update_branch_head)
+        self.l_branch_head = ttk.Label(self.frame_buttons1, text="Hi *^v^*")
         self.b_log = ttk.Button(self.frame_buttons1, text="Log",
                                        command=self.log)
         self.b_clone = ttk.Button(self.frame_buttons2, text="Clone",
@@ -1799,7 +1798,6 @@ class FileBrowser(tk.Toplevel):
             root = tk.Tk()
             style = ttk.Style(root)
             style.theme_use("clam")
-            print(root)
             root.configure(bg=style.lookup('TFrame', 'background'))
 
             # 브랜치 기능 버튼
@@ -1903,7 +1901,6 @@ class FileBrowser(tk.Toplevel):
             root_del = tk.Tk()
             style = ttk.Style(root_del)
             style.theme_use("clam")
-            print(root_del)
             root_del.configure(bg=style.lookup('TFrame', 'background'))
             ttk.Label(root_del, text="Select one branch you want to delete.").grid(row=0, column=0, columnspan=5)
             ttk.Label(root_del, text=" ").grid(row=1, column=0, columnspan=5)
@@ -1913,7 +1910,6 @@ class FileBrowser(tk.Toplevel):
             if i>0: # 원격 브랜치가 있을 때
 
                 for i in cmd:
-                    print(i)
                     q,r=divmod(arrange,5)
                     if i == headbr[-1]:     # 헤드가 가리키는 원격 브랜치 색 바꾸기
                         style.configure("Custom.TButton", foreground="red")
@@ -1942,7 +1938,6 @@ class FileBrowser(tk.Toplevel):
                 
             arr=0
             for j in cmdL:
-                print(j)
                 q,rd=divmod(arrange,5)
                 qd,r=divmod(arr,5)
                 if j == curbr :
@@ -2002,7 +1997,6 @@ class FileBrowser(tk.Toplevel):
             root_ren = tk.Tk()
             style = ttk.Style(root_ren)
             style.theme_use("clam")
-            print(root_ren)
             root_ren.configure(bg=style.lookup('TFrame', 'background'))
             ttk.Label(root_ren, text="Select one branch you want to rename.").grid(row=0, column=0, columnspan=5)
             ttk.Label(root_ren, text=" ").grid(row=1, column=0, columnspan=5)
@@ -2012,7 +2006,6 @@ class FileBrowser(tk.Toplevel):
             if i>0: # 원격 브랜치가 있을 때
 
                 for i in cmd:
-                    print(i)
                     q,r=divmod(arrange,5)
                     if i == headbr[-1]:     # 헤드가 가리키는 원격 브랜치 색 바꾸기
                         style.configure("Custom.TButton", foreground="red")
@@ -2042,7 +2035,6 @@ class FileBrowser(tk.Toplevel):
             arr=0
             button_num=1
             for j in cmdL:
-                print(j)
                 q,rd=divmod(arrange,5)
                 qd,r=divmod(arr,5)
                 if j == curbr :
@@ -2101,7 +2093,6 @@ class FileBrowser(tk.Toplevel):
             root_che = tk.Tk()
             style = ttk.Style(root_che)
             style.theme_use("clam")
-            print(root_che)
             root_che.configure(bg=style.lookup('TFrame', 'background'))
             ttk.Label(root_che, text="Select one branch you want to checkout").grid(row=0, column=0, columnspan=5)
             ttk.Label(root_che, text=" ").grid(row=1, column=0, columnspan=5)
@@ -2111,7 +2102,6 @@ class FileBrowser(tk.Toplevel):
             if i>0: # 원격 브랜치가 있을 때
 
                 for i in cmd:
-                    print(i)
                     q,r=divmod(arrange,5)
                     if i == headbr[-1]:     # 헤드가 가리키는 원격 브랜치 색 바꾸기
                         style.configure("Custom.TButton", foreground="red")
@@ -2140,7 +2130,6 @@ class FileBrowser(tk.Toplevel):
                 
             arr=0
             for j in cmdL:
-                print(j)
                 q,rd=divmod(arrange,5)
                 qd,r=divmod(arr,5)
                 if j == curbr :
@@ -2185,7 +2174,6 @@ class FileBrowser(tk.Toplevel):
             else:
                 if "non-zero exit status 1" in str(e):
                     messagebox.showerror("Merge Conflict Error", "CONFLICT (content): Merge conflict occured.\nThe merge will be canceled automatically by git merge --abort.")
-                    print(str(e))
                     
                     unmerged_s = subprocess.run(['git', 'status'], cwd=dir, stdout=subprocess.PIPE)
                     unmerged_s_d = unmerged_s.stdout.strip().decode('utf-8')
@@ -2194,12 +2182,10 @@ class FileBrowser(tk.Toplevel):
                     unmerged_p_l = [string for string in split_s if pick_unmerged_p in string] # list타입
                     split_unm = unmerged_p_l[0].split("\n")   # split_unm[1] 제외하고 모두 보여주기.
                     unmerged_path = split_unm[:1] + split_unm[2:]
-                    print(unmerged_path)  
                     
                     root_unm = tk.Tk()
                     style = ttk.Style(root_unm)
                     style.theme_use("clam")
-                    print(root_unm)
                     root_unm.configure(bg=style.lookup('TFrame', 'background'))    
                     for n in range(len(unmerged_path)):
                         ttk.Label(root_unm, text=unmerged_path[n]).grid(row=n, column=0, padx=10, pady=5, sticky="w")
@@ -2219,7 +2205,6 @@ class FileBrowser(tk.Toplevel):
             root_mer = tk.Tk()
             style = ttk.Style(root_mer)
             style.theme_use("clam")
-            print(root_mer)
             root_mer.configure(bg=style.lookup('TFrame', 'background'))
             ttk.Label(root_mer, text="Select one branch to merge with the current branch.").grid(row=0, column=0, columnspan=5)
             ttk.Label(root_mer, text=" ").grid(row=1, column=0, columnspan=5)
@@ -2229,7 +2214,6 @@ class FileBrowser(tk.Toplevel):
             if i>0: # 원격 브랜치가 있을 때
 
                 for i in cmd:
-                    print(i)
                     q,r=divmod(arrange,5)
                     if i == headbr[-1]:     # 헤드가 가리키는 원격 브랜치 색 바꾸기
                         style.configure("Custom.TButton", foreground="red")
@@ -2258,7 +2242,6 @@ class FileBrowser(tk.Toplevel):
                 
             arr=0
             for j in cmdL:
-                print(j)
                 q,rd=divmod(arrange,5)
                 qd,r=divmod(arr,5)
                 if j == curbr :
@@ -2288,10 +2271,8 @@ class FileBrowser(tk.Toplevel):
             cmd, cmdL, i, j, headbr, curbr = self.return_branch_list()
             self.l_branch_head["text"] = "Head -> " + curbr
             self.l_branch_head.pack(side="right", padx=(0,4))
-            self.l_branch_head_update.pack(side="right", padx=(0,2))
         else:
             self.l_branch_head.pack_forget()
-            self.l_branch_head_update.pack_forget()
 
     def log_need(self):
         if self.is_git_repo():
