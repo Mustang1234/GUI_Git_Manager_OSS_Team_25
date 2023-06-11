@@ -2286,10 +2286,9 @@ class FileBrowser(tk.Toplevel):
             style.configure("Custom.TLabel", foreground="red")
             self.l_branch_head.configure(style="Custom.TLabel")
             cmd, cmdL, i, j, headbr, curbr = self.return_branch_list()
-            self.l_branch_head["text"] = "Branch : " + curbr
+            self.l_branch_head["text"] = "Head -> " + curbr
             self.l_branch_head.pack(side="right", padx=(0,4))
             self.l_branch_head_update.pack(side="right", padx=(0,2))
-            print(type(self.l_branch_head), "Branch : " + curbr)
         else:
             self.l_branch_head.pack_forget()
             self.l_branch_head_update.pack_forget()
