@@ -21,6 +21,7 @@ Main class
 """
 import os
 import tkinter as tk
+import tkinter.simpledialog as simpledialog
 from tkinter import messagebox
 import subprocess
 import tkfilebrowser
@@ -47,7 +48,7 @@ from autoscrollbar_custom import AutoScrollbar
 from path_button_custom import PathButton
 from tooltip_custom import TooltipTreeWrapper
 from recent_files_custom import RecentFiles
-
+import configparser
 
 
 if OSNAME == 'nt':
@@ -143,7 +144,7 @@ class FileBrowser(tk.Toplevel):
 
         self.rowconfigure(2, weight=1)
         self.columnconfigure(0, weight=1)
-
+        
         self.mode = mode
         self.result = ""
         self.foldercreation = foldercreation
@@ -277,16 +278,11 @@ class FileBrowser(tk.Toplevel):
         self.b_branch = ttk.Button(self.frame_buttons1, text="Branch",
                                        command=self.branch_function)
         self.b_branch_list=[]
-
-        self.b_head_text = tk.StringVar()
-        self.b_head_text.set("Show Head Branch")
-        
-        self.b_branch_head = ttk.Button(self.frame_buttons1, textvariable=self.b_head_text, command=self.update_branch_head)
-
+        self.l_branch_head = ttk.Label(self.frame_buttons1, text="Hi *^v^*")
         self.b_log = ttk.Button(self.frame_buttons1, text="Log",
-                                       command=self.log).pack(side="left",padx=(0,3))
-        self.b_clone = ttk.Button(self.frame_buttons1, text="Clone",
-                                       command=self.clone).pack(side="left",padx=(0,3))
+                                       command=self.log)
+        self.b_clone = ttk.Button(self.frame_buttons2, text="Clone",
+                                       command=self.clone)
         self.b_quit = ttk.Button(self.frame_buttons2, text=cancelbuttontext,
                                        command=self.quit).pack(side="right", padx=(4,0))
         self.b_git_init = ttk.Button(self.frame_buttons2, text="git init",
@@ -779,14 +775,18 @@ class FileBrowser(tk.Toplevel):
     def init_need(self,dir):
         if ".git" not in walk(dir).send(None)[1]:
             self.b_git_init.pack(side="left", padx=(0,4))
+            self.b_clone.pack(side="left", padx=(0,4))
         else:
             self.b_git_init.pack_forget()
+            self.b_clone.pack_forget()
 
     def init_need_num(self,num):
         if num == 0:
             self.b_git_init.pack(side="left", padx=(0,4))
+            self.b_clone.pack(side="left", padx=(0,4))
         else:
             self.b_git_init.pack_forget()
+            self.b_clone.pack_forget()
 
     def update_status(self):
         self._display_folder_walk(self.getdir())
@@ -1227,6 +1227,7 @@ class FileBrowser(tk.Toplevel):
         extension = self.filetypes[self.filetype.get()]
         content = listdir(folder)
         self.branch()
+        self.log_need()
         self.update_branch_head()
         self.init_need_num(len(content))
         i = 0
@@ -1349,6 +1350,7 @@ class FileBrowser(tk.Toplevel):
         self.right_tree.delete(*self.hidden)
         self.hidden = ()
         self.branch()
+        self.log_need()
         self.update_branch_head()
         try:
             root, dirs, files = walk(folder).send(None)
@@ -1485,6 +1487,7 @@ class FileBrowser(tk.Toplevel):
         self.hidden = ()
         extension = self.filetypes[self.filetype.get()]
         self.branch()
+        self.log_need()
         self.update_branch_head()
         try:
             content = sorted(scandir(folder), key=key_sort_files)
@@ -1662,7 +1665,7 @@ class FileBrowser(tk.Toplevel):
         message = "Do you want to commit this staged files?\n\n[ Staged changes ] :\n" + "\n".join(staged_list)
         is_ok_commit = messagebox.askquestion("Staged file list to commit", message)
         if is_ok_commit == 'yes':
-            msg = tk.simpledialog.askstring("commit", "Enter your commit message: ") #커밋메세지 작성
+            msg = simpledialog.askstring("commit", "Enter your commit message: ") #커밋메세지 작성
         
             if msg and msg.strip(): # 커밋 메세지 작성 후 "OK" 버튼이 눌렀을 때
                 subprocess.run(['git', 'commit', '-m', msg], cwd=dir)
@@ -1747,11 +1750,17 @@ class FileBrowser(tk.Toplevel):
 
         while True:
             new_path = tkfilebrowser.askopendirname(parent=self.parent)
+            print(new_path, new_path == "")
+            if new_path == "":
+                return
 
             new_file_name = os.path.basename(old_path)
             while True:
                 # Ask for new file name
-                new_file_name = tk.simpledialog.askstring("New file name", "Enter the new file name", initialvalue=new_file_name)
+                new_file_name = simpledialog.askstring("New file name", "Enter the new file name", initialvalue=new_file_name)
+                print(new_file_name, new_file_name == None)
+                if new_file_name == None:
+                    return
                 if not new_file_name:
                     return
                 new_path = os.path.join(new_path, new_file_name)
@@ -1769,7 +1778,6 @@ class FileBrowser(tk.Toplevel):
             else:
                 break
 
-
         try:
             subprocess.run(["git", "mv", old_path, new_path], cwd=self._get_git_directory(), check=True, shell=False, stderr=subprocess.PIPE)
             self._display_folder_walk(self.getdir())
@@ -1785,9 +1793,6 @@ class FileBrowser(tk.Toplevel):
         else:
             self.b_branch.pack_forget()
     
-
-
-
     def branch_function(self):
         #branch 버튼을 클릭하면 새 창 띄우고 깃의 모든 원격 브랜치와 로컬 브랜치 리스트 버튼 보여주기
         if self.is_git_repo():
@@ -1799,16 +1804,15 @@ class FileBrowser(tk.Toplevel):
             root = tk.Tk()
             style = ttk.Style(root)
             style.theme_use("clam")
-            print(root)
             root.configure(bg=style.lookup('TFrame', 'background'))
 
             # 브랜치 기능 버튼
             ttk.Label(root, text="Git Branch Function").grid(columnspan=5, padx=60, pady=10, sticky='ew')
-            ttk.Button(root, text="Create Branch", command=lambda: self.create_branch(root)).grid(column=0, columnspan=5)
-            ttk.Button(root, text="Delete Branch", command=lambda: self.delete_branch(root)).grid(column=0, pady=8, columnspan=5)
-            ttk.Button(root, text="Rename Branch", command=lambda: self.rename_branch(root)).grid(column=0, columnspan=5)
-            ttk.Button(root, text="Checkout Branch", command=lambda: self.checkout_branch(root)).grid(column=0, pady=8, columnspan=5)
-            ttk.Button(root, text="Merge Branch", command=lambda: self.merge_branch(root)).grid(column=0, columnspan=5)
+            ttk.Button(root, text="Create Branch", command=lambda: self.create_branch(root)).grid(column=0, columnspan=5, pady=(0,4))
+            ttk.Button(root, text="Delete Branch", command=lambda: self.delete_branch(root)).grid(column=0, columnspan=5, pady=(0,4))
+            ttk.Button(root, text="Rename Branch", command=lambda: self.rename_branch(root)).grid(column=0, columnspan=5, pady=(0,4))
+            ttk.Button(root, text="Checkout Branch", command=lambda: self.checkout_branch(root)).grid(column=0, columnspan=5, pady=(0,4))
+            ttk.Button(root, text="Merge Branch", command=lambda: self.merge_branch(root)).grid(column=0, columnspan=5, pady=(0,4))
 
             
     def return_branch_list(self):
@@ -1826,6 +1830,7 @@ class FileBrowser(tk.Toplevel):
                     #headbr[-1]에 헤드가 가리키는 브랜치가 있다.
             
             # 로컬 브랜치
+            curbr = None
             cmdL=subprocess.run(['git', 'branch'], cwd=self._get_git_directory(), capture_output=True).stdout.decode().strip().split("\n")
             for j in range(len(cmdL)):
                 if j>=len(cmdL):
@@ -1841,7 +1846,7 @@ class FileBrowser(tk.Toplevel):
         dir = self.getdir()
         
         if self.is_git_repo():
-            branch_name=tk.simpledialog.askstring("Create Branch", "Enter the new branch name: ")
+            branch_name=simpledialog.askstring("Create Branch", "Enter the new branch name: ")
 
             if branch_name and branch_name.strip(): # 브랜치 이름 작성하고 "OK" 버튼이 눌렀을 때
                 try:
@@ -1903,17 +1908,15 @@ class FileBrowser(tk.Toplevel):
             root_del = tk.Tk()
             style = ttk.Style(root_del)
             style.theme_use("clam")
-            print(root_del)
             root_del.configure(bg=style.lookup('TFrame', 'background'))
             ttk.Label(root_del, text="Select one branch you want to delete.").grid(row=0, column=0, columnspan=5)
             ttk.Label(root_del, text=" ").grid(row=1, column=0, columnspan=5)
             ttk.Label(root_del, text="[Remote branch]").grid(row=2, column=0, columnspan=5)
 
             arrange=0   # 원격 브랜치 나타내기
-            if i>0: # 원격 브랜치가 있을 때
+            if i>0 and curbr != None: # 원격 브랜치가 있을 때
 
                 for i in cmd:
-                    print(i)
                     q,r=divmod(arrange,5)
                     if i == headbr[-1]:     # 헤드가 가리키는 원격 브랜치 색 바꾸기
                         style.configure("Custom.TButton", foreground="red")
@@ -1942,12 +1945,10 @@ class FileBrowser(tk.Toplevel):
                 
             arr=0
             for j in cmdL:
-                print(j)
                 q,rd=divmod(arrange,5)
                 qd,r=divmod(arr,5)
-                if j == curbr :
+                if j == curbr and curbr != None:
                     style.configure("Custom.TButton", foreground="red")
-
                     head_local = ttk.Button(root_del, text=j, command=lambda id=j: self.clicked_to_delete(curbr, id, root, root_del), style="Custom.TButton")
                     head_local.grid(row=q+6, column=r)
 
@@ -1965,7 +1966,7 @@ class FileBrowser(tk.Toplevel):
     def clicked_to_rename(self, old_branch_name, root, root_ren):
             dir=self.getdir()
             
-            new_branch_name=tk.simpledialog.askstring("Rename Branch", "Enter the new branch name for rename the branch:")
+            new_branch_name=simpledialog.askstring("Rename Branch", "Enter the new branch name for rename the branch:")
             if new_branch_name and new_branch_name.strip(): # rename할 브랜치 이름 작성하고 "OK" 버튼이 눌렀을 때
                 try:
                     result = subprocess.run(['git', 'branch', '-m', old_branch_name, new_branch_name], cwd=dir, stderr=subprocess.PIPE)
@@ -2002,17 +2003,15 @@ class FileBrowser(tk.Toplevel):
             root_ren = tk.Tk()
             style = ttk.Style(root_ren)
             style.theme_use("clam")
-            print(root_ren)
             root_ren.configure(bg=style.lookup('TFrame', 'background'))
             ttk.Label(root_ren, text="Select one branch you want to rename.").grid(row=0, column=0, columnspan=5)
             ttk.Label(root_ren, text=" ").grid(row=1, column=0, columnspan=5)
             ttk.Label(root_ren, text="[Remote branch]").grid(row=2, column=0, columnspan=5)
 
             arrange=0   # 원격 브랜치 나타내기
-            if i>0: # 원격 브랜치가 있을 때
+            if i>0 and curbr != None: # 원격 브랜치가 있을 때
 
                 for i in cmd:
-                    print(i)
                     q,r=divmod(arrange,5)
                     if i == headbr[-1]:     # 헤드가 가리키는 원격 브랜치 색 바꾸기
                         style.configure("Custom.TButton", foreground="red")
@@ -2042,10 +2041,9 @@ class FileBrowser(tk.Toplevel):
             arr=0
             button_num=1
             for j in cmdL:
-                print(j)
                 q,rd=divmod(arrange,5)
                 qd,r=divmod(arr,5)
-                if j == curbr :
+                if j == curbr and curbr != None:
                     style.configure("Custom.TButton", foreground="red")
 
                     head_local = ttk.Button(root_ren, text=j, command=lambda id=j: self.clicked_to_rename(id,root,root_ren), style="Custom.TButton")
@@ -2101,17 +2099,15 @@ class FileBrowser(tk.Toplevel):
             root_che = tk.Tk()
             style = ttk.Style(root_che)
             style.theme_use("clam")
-            print(root_che)
             root_che.configure(bg=style.lookup('TFrame', 'background'))
             ttk.Label(root_che, text="Select one branch you want to checkout").grid(row=0, column=0, columnspan=5)
             ttk.Label(root_che, text=" ").grid(row=1, column=0, columnspan=5)
             ttk.Label(root_che, text="[Remote branch]").grid(row=2, column=0, columnspan=5)
 
             arrange=0   # 원격 브랜치 나타내기
-            if i>0: # 원격 브랜치가 있을 때
+            if i>0 and curbr != None: # 원격 브랜치가 있을 때
 
                 for i in cmd:
-                    print(i)
                     q,r=divmod(arrange,5)
                     if i == headbr[-1]:     # 헤드가 가리키는 원격 브랜치 색 바꾸기
                         style.configure("Custom.TButton", foreground="red")
@@ -2140,10 +2136,9 @@ class FileBrowser(tk.Toplevel):
                 
             arr=0
             for j in cmdL:
-                print(j)
                 q,rd=divmod(arrange,5)
                 qd,r=divmod(arr,5)
-                if j == curbr :
+                if j == curbr and curbr != None:
                     style.configure("Custom.TButton", foreground="red")
 
                     head_local = ttk.Button(root_che, text=j, command=lambda id=j: self.clicked_to_checkout("Y", id, root, root_che), style="Custom.TButton")
@@ -2185,7 +2180,6 @@ class FileBrowser(tk.Toplevel):
             else:
                 if "non-zero exit status 1" in str(e):
                     messagebox.showerror("Merge Conflict Error", "CONFLICT (content): Merge conflict occured.\nThe merge will be canceled automatically by git merge --abort.")
-                    print(str(e))
                     
                     unmerged_s = subprocess.run(['git', 'status'], cwd=dir, stdout=subprocess.PIPE)
                     unmerged_s_d = unmerged_s.stdout.strip().decode('utf-8')
@@ -2194,12 +2188,10 @@ class FileBrowser(tk.Toplevel):
                     unmerged_p_l = [string for string in split_s if pick_unmerged_p in string] # list타입
                     split_unm = unmerged_p_l[0].split("\n")   # split_unm[1] 제외하고 모두 보여주기.
                     unmerged_path = split_unm[:1] + split_unm[2:]
-                    print(unmerged_path)  
                     
                     root_unm = tk.Tk()
                     style = ttk.Style(root_unm)
                     style.theme_use("clam")
-                    print(root_unm)
                     root_unm.configure(bg=style.lookup('TFrame', 'background'))    
                     for n in range(len(unmerged_path)):
                         ttk.Label(root_unm, text=unmerged_path[n]).grid(row=n, column=0, padx=10, pady=5, sticky="w")
@@ -2219,17 +2211,15 @@ class FileBrowser(tk.Toplevel):
             root_mer = tk.Tk()
             style = ttk.Style(root_mer)
             style.theme_use("clam")
-            print(root_mer)
             root_mer.configure(bg=style.lookup('TFrame', 'background'))
             ttk.Label(root_mer, text="Select one branch to merge with the current branch.").grid(row=0, column=0, columnspan=5)
             ttk.Label(root_mer, text=" ").grid(row=1, column=0, columnspan=5)
             ttk.Label(root_mer, text="[Remote branch]").grid(row=2, column=0, columnspan=5)
 
             arrange=0   # 원격 브랜치 나타내기
-            if i>0: # 원격 브랜치가 있을 때
+            if i>0 and curbr != None: # 원격 브랜치가 있을 때
 
                 for i in cmd:
-                    print(i)
                     q,r=divmod(arrange,5)
                     if i == headbr[-1]:     # 헤드가 가리키는 원격 브랜치 색 바꾸기
                         style.configure("Custom.TButton", foreground="red")
@@ -2258,10 +2248,9 @@ class FileBrowser(tk.Toplevel):
                 
             arr=0
             for j in cmdL:
-                print(j)
                 q,rd=divmod(arrange,5)
                 qd,r=divmod(arr,5)
-                if j == curbr :
+                if j == curbr and curbr != None:
                     style.configure("Custom.TButton", foreground="red")
 
                     head_local = ttk.Button(root_mer, text=j, command=lambda id=j: self.clicked_to_merge(id, root, root_mer), style="Custom.TButton")
@@ -2283,22 +2272,126 @@ class FileBrowser(tk.Toplevel):
         if self.is_git_repo():
             # 헤드가 가리키는 로컬 브랜치 나타내기
             style = ttk.Style()
-            style.configure("Custom.TButton", foreground="red")
-            self.b_branch_head.configure(style="Custom.TButton")
-            self.b_branch_head.pack(side="right", padx=(0,4))
+            style.configure("Custom.TLabel", foreground="red")
+            self.l_branch_head.configure(style="Custom.TLabel")
             cmd, cmdL, i, j, headbr, curbr = self.return_branch_list()
-            self.b_head_text.set(curbr)
+            if curbr == None:
+                self.l_branch_head["text"] = "No branch yet"
+            else:
+                self.l_branch_head["text"] = "Head -> " + curbr
+            self.l_branch_head.pack(side="right", padx=(0,4))
         else:
-            self.b_branch_head.pack_forget()
+            self.l_branch_head.pack_forget()
 
+    def log_need(self):
+        if self.is_git_repo():
+            self.b_log.pack(side="left",padx=(0,3))
+        else:
+            self.b_log.pack_forget()
 
     def log(self):
-        pass
-        # 로그 창 만들어서 로그 띄우는 기능
+        def open_scrolls(width, height):
+            root = tk.Tk()
+            style = ttk.Style(root)
+            style.theme_use("clam")
+            root.configure(bg=style.lookup('TFrame', 'background'))
+            container = ttk.Frame(root)
+            canvas = tk.Canvas(container, width=max(min(800, width),320), height=max(min(500, height),200), bg=style.lookup('TFrame', 'background'))
+            scrollbar_Y = ttk.Scrollbar(container, orient="vertical", command=canvas.yview)
+            scrollbar_X = ttk.Scrollbar(container, orient="horizontal", command=canvas.xview)
+            frame = ttk.Frame(canvas)
+            frame.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
+            canvas.create_window((0, 0), window=frame, anchor="nw")
+            canvas.configure(yscrollcommand=scrollbar_Y.set, xscrollcommand=scrollbar_X.set)
+            scrollbar_Y.pack(side="right", fill="y")
+            scrollbar_X.pack(side="bottom", fill="x")
+            canvas.pack(side="bottom")
+            container.pack()
+            return frame
+                    
+        def spec(commit_hash):
+            specs=[_ for _ in subprocess.run(['git', 'log', '-1', '-U', commit_hash], cwd=self._get_git_directory(), capture_output=True).stdout.decode().strip().split("\n")][:50]
+            frame = open_scrolls(len(max(specs, key=len)*6), len(specs)*6)
+            for i in range(len(specs)):
+                ttk.Label(frame, text=specs[i]).grid(row=i+2, column=0, sticky="w")
+
+        if self.is_git_repo():
+            logs=[_[:_.find(" ")] for _ in subprocess.run(['git', 'log', '--pretty=oneline'], cwd=self._get_git_directory(), capture_output=True).stdout.decode().strip().split("\n")]
+            glog=[_ for _ in subprocess.run(['git', 'log', '--pretty=oneline', '--graph'], cwd=self._get_git_directory(), capture_output=True).stdout.decode().strip().split("\n")]
+            if len(glog) != 1 or glog[0] != '':
+                frame = open_scrolls(len(max(glog, key=len)*6), len(glog)*6)
+                for i in range(len(glog)):
+                    graph=glog[i]
+                    for j in range(len(logs)):
+                        if logs[j] in glog[i]:
+                            graph=glog[i][:glog[i].find(logs[j])]
+                            ttk.Button(frame, text=logs[j][:7], command=(lambda d: lambda: spec(d))(logs[j])).grid(column=1, row=i, sticky="w")
+                            ttk.Label(frame, text=glog[i][glog[i].find(logs[j])+40:glog[i].find(logs[j])+200]).grid(column=2, row=i, sticky="w")
+                            break
+                    label=ttk.Label(frame, text=graph, font=("Courier", 15))
+                    label.grid(column=0, row=i, sticky="w")
+            else:
+                messagebox.showerror("Error", "No commits exist")
 
     def clone(self):
-        pass
-        # 클론누르면 창 띄워서 http어쩌구 또는 로컬 주소 받아서 클론해오기 하는거 만들기
+        repository_address = simpledialog.askstring("GitHub Clone", "Enter the GitHub repository address:")
+        if repository_address != None:
+            repository_type = messagebox.askyesno("Visibility", "Public?\nYes : public / No : private")
+            if repository_type != None:
+                if repository_address.find("https://github.com/") == 0:
+                    if ".git" not in repository_address:
+                        repository_address += ".git"
+
+                    if repository_type == True:
+                        # Public일때 실행하는 코드
+                            if subprocess.run(['git', 'clone' , repository_address], cwd=self.getdir(), capture_output=True).returncode == 0:
+                                self.update_status()
+                            else:
+                                messagebox.showerror("Clone Failed", "Failed to clone from public repository.")
+
+                    elif repository_type == False:
+                        # Private일때 실행하는 코드
+                        ID = repository_address[19:19+repository_address[19:].find("/")]
+                        found = "not found"
+                        config_file = 'config.ini'
+                        config = configparser.ConfigParser()
+                        config.read(config_file)
+                        for i in range(1,len(config)):
+                            if config[str(i)]['GitHub_access_ID'] == ID:
+                                found = str(i)   
+                                break
+                            
+                        if found != "not found":
+                            access_token = config[found]['GitHub_access_token']
+                        else:
+                            access_token = simpledialog.askstring("GitHub Clone", "Enter the access token:")
+                        
+                        if access_token != None:
+                            repository_address_1 = repository_address[:repository_address.find("https://")+len("https://")]
+                            repository_address_2 = repository_address[repository_address.find("https://")+len("https://"):]
+                            repository_address_token = repository_address_1 + access_token + ":x-oauth-basic@" + repository_address_2
+                            if subprocess.run(['git', 'clone' , repository_address_token], cwd=self.getdir(), capture_output=True).returncode == 0:
+                                self.update_status()
+                                if found == "not found":
+                                    num=str(len(config))
+                                    config[num] = {}
+                                    config[num]['GitHub_access_ID'] = ID
+                                    config[num]['GitHub_access_token'] = access_token
+                                    with open(config_file, 'w') as config_file:
+                                        config.write(config_file)
+                            else:
+                                messagebox.showerror("Clone Failed", "Failed to clone from private repository.")
+                            
+                            config.set('GitHub_ID', ID)
+                            config.set('GitHub_access_token', access_token)
+                            with open(config_file, 'w') as config_file:
+                                config.write(config_file)
+
+                    else:
+                        messagebox.showerror("Invalid Repository Type", "Invalid repository type specified.")
+                else:
+                    messagebox.showerror("Invalid Repository Name", "Invalid repository Name.")
+
 
     def quit(self):
         """Destroy dialog."""
