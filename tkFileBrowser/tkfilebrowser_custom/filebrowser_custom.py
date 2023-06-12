@@ -47,7 +47,6 @@ from autoscrollbar_custom import AutoScrollbar
 from path_button_custom import PathButton
 from tooltip_custom import TooltipTreeWrapper
 from recent_files_custom import RecentFiles
-from github import Github,GithubException
 import configparser
 
 
@@ -1780,53 +1779,36 @@ class FileBrowser(tk.Toplevel):
 
     def clone(self):
         repository_address = tk.simpledialog.askstring("GitHub Clone", "Enter the GitHub repository address:")
-        repository_type = tk.simpledialog.askstring("GitHub Clone", "Enter the repository type (public or private):")
+        if repository_address != None:
+            repository_type = tk.simpledialog.askstring("GitHub Clone", "Enter the repository type (public or private):")
+            if repository_type != None:
+                if repository_address.find("https://github.com/") == 0:
+                    if ".git" not in repository_address:
+                        repository_address += ".git"
 
-        if repository_type == "public":
-            # Public일때 실행하는 코드
-            if repository_address.find("https://github.com/") == 0:
-                if ".git" not in repository_address:
-                    repository_address += ".git"
-                if subprocess.run(['git', 'clone' , repository_address], cwd=self.getdir(), capture_output=True).returncode == 0:
-                    self.update_status()
+                    if repository_type == "public":
+                        # Public일때 실행하는 코드
+                            if subprocess.run(['git', 'clone' , repository_address], cwd=self.getdir(), capture_output=True).returncode == 0:
+                                self.update_status()
+                            else:
+                                messagebox.showerror("Clone Failed", "Failed to clone from public repository.")
+
+                    elif repository_type == "private":
+                        # Private일때 실행하는 코드
+                        access_token = tk.simpledialog.askstring("GitHub Clone", "Enter the access token:")
+                        if access_token != None:
+                            repository_address_1 = repository_address[:repository_address.find("https://")+len("https://")]
+                            repository_address_2 = repository_address[repository_address.find("https://")+len("https://"):]
+                            repository_address_token = repository_address_1 + access_token + ":x-oauth-basic@" + repository_address_2
+                            if subprocess.run(['git', 'clone' , repository_address_token], cwd=self.getdir(), capture_output=True).returncode == 0:
+                                self.update_status()
+                            else:
+                                messagebox.showerror("Clone Failed", "Failed to clone from private repository.")
+
+                    else:
+                        messagebox.showerror("Invalid Repository Type", "Invalid repository type specified.")
                 else:
-                    messagebox.showerror("Clone Failed", "Failed to clone from public repository.")
-
-        elif repository_type == "private":
-            # Private일때 실행하는 코드
-            repository_id = tk.simpledialog.askstring("GitHub Clone", "Enter the GitHub repository ID:")
-            access_token = tk.simpledialog.askstring("GitHub Clone", "Enter the access token:")
-
-            try:
-                # 토큰 확인
-                g = Github(access_token)
-                repo = g.get_repo(repository_id)  # repository id 저장
-                clone_command = f"git clone {repo.ssh_url}"
-                current_directory = os.getcwd()  # 현재 작업 디렉토리 저장
-                target_directory = tk.filedialog.askdirectory()  # 클론할 대상 디렉토리 선택
-                os.chdir(target_directory)  # 작업 디렉토리 변경
-                exit_status = os.system(clone_command)
-                os.chdir(current_directory)  # 작업 디렉토리를 원래대로 변경
-                if exit_status == 0:
-                    messagebox.showinfo("Clone Successful", "Private repository cloned successfully.")
-                else:
-                    messagebox.showerror("Clone Failed", "Failed to clone private repository.")
-
-                # ID와 토큰을 구성 파일에 저장
-                self.config.set('GitHub', 'repository_id', repository_id)
-                self.config.set('GitHub', 'access_token', access_token)
-
-                # 구성 파일 저장
-                with open(self.config_file, 'w') as config_file:
-                    self.config.write(config_file)
-
-            except GithubException as e:
-                messagebox.showerror("Error", f"An error occurred: {str(e)}")
-            except Exception as e:
-                messagebox.showerror("Error", f"An error occurred: {str(e)}")
-
-        else:
-            messagebox.showerror("Invalid Repository Type", "Invalid repository type specified.")
+                    messagebox.showerror("Invalid Repository Name", "Invalid repository Name.")
 
 
     def quit(self):
