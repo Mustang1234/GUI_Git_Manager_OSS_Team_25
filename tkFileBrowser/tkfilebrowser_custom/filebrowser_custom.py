@@ -2287,7 +2287,8 @@ class FileBrowser(tk.Toplevel):
             style.theme_use("clam")
             root.configure(bg=style.lookup('TFrame', 'background'))
             container = ttk.Frame(root)
-            canvas = tk.Canvas(container, width=max(min(800, width),20), height=max(min(500, height),10))
+            print(width, height)
+            canvas = tk.Canvas(container, width=max(min(800, width),320), height=max(min(500, height),200), bg=style.lookup('TFrame', 'background'))
             scrollbar_Y = ttk.Scrollbar(container, orient="vertical", command=canvas.yview)
             scrollbar_X = ttk.Scrollbar(container, orient="horizontal", command=canvas.xview)
             frame = ttk.Frame(canvas)
@@ -2309,14 +2310,14 @@ class FileBrowser(tk.Toplevel):
         if self.is_git_repo():
             logs=[_[:_.index(" ")] for _ in subprocess.run(['git', 'log', '--pretty=oneline'], cwd=self._get_git_directory(), capture_output=True).stdout.decode().strip().split("\n")]
             glog=[_ for _ in subprocess.run(['git', 'log', '--pretty=oneline', '--graph'], cwd=self._get_git_directory(), capture_output=True).stdout.decode().strip().split("\n")]
-            frame = open_scrolls(len(max(glog, key=len)*5), len(glog)*5)
+            frame = open_scrolls(len(max(glog, key=len)*6), len(glog)*6)
             for i in range(len(glog)):
                 graph=glog[i]
                 for j in range(len(logs)):
                     if logs[j] in glog[i]:
                         graph=glog[i][:glog[i].index(logs[j])]
                         ttk.Button(frame, text=logs[j][:7], command=(lambda d: lambda: spec(d))(logs[j])).grid(column=1, row=i, sticky="w")
-                        ttk.Label(frame, text=glog[i][glog[i].index(logs[j])+40:glog[i].index(logs[j])+140]).grid(column=2, row=i, sticky="w")
+                        ttk.Label(frame, text=glog[i][glog[i].index(logs[j])+40:glog[i].index(logs[j])+200]).grid(column=2, row=i, sticky="w")
                         break
                 label=ttk.Label(frame, text=graph, font=("Courier", 15))
                 label.grid(column=0, row=i, sticky="w")
