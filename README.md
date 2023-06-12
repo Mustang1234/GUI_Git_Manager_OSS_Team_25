@@ -136,8 +136,9 @@ Caution: Do not start the branch name with "-".
 
 ###### 18. Git Clone
 
-- how to use? Please enter the HTTP address you want to clone. Once you enter it, a button will appear asking whether the repository is public or private. Enter "public" or "private". If it's private, you'll need to enter your ID and token for the clone to proceed. 
-Note: Our program does not automatically append ".git" to the address. You need to provide the address including ".git".
+- how to use? Click the clone button in the folder where you want to clone the repository. Please enter the HTTPS address you want to clone. (Repository's HTTPS address : Press the <>code button and copy the https address in Github.) Once you enter it, a window will appear asking whether the repository is public or private. Enter "public" or "private". If it's private, you'll need to enter the  personal access token for the clone to proceed. 
+Note: You can enter an address that contains .git or an address that does not contain .git.
+(example: Both "https://github.com/Mustang1234/GUI_Git_Manager_OSS_Team_25.git" and "https://github.com/Mustang1234/GUI_Git_Manager_OSS_Team_25" is possible.)
 
 The config.ini file, which contains the ID and token information, will be stored in the current working directory. The working directory refers to the directory where the program is being executed. Therefore, the location of the config.ini file depends on the location where the code is being run. It is important to note that the config.ini file should be properly secured and encrypted. Additional security measures should be implemented to safely store and manage sensitive information.
 
