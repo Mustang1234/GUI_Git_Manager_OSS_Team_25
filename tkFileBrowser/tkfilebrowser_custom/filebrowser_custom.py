@@ -1772,25 +1772,7 @@ class FileBrowser(tk.Toplevel):
 
     def branch(self):
         # 브렌치 창 만들어서 브렌치 띄우는 기능, merge, create, delete 포함!!
-        if self.is_git_repo():
-            self.b_branch_update.pack(side="left")
-            self.b_branch_colon.pack(side="left")
-            cmd=subprocess.run(['git', 'branch' , '-r'], cwd=self._get_git_directory(), capture_output=True).stdout.decode().strip().split("\n")
-            for i in range(len(cmd)):
-                if i>=len(cmd):
-                    break
-                cmd[i].replace(" ", "")
-                if "->" in cmd[i]:
-                    del cmd[i]
-            for i in cmd:
-                self.b_branch_list.append(ttk.Button(self.frame_buttons1, text=i))
-                self.b_branch_list[len(self.b_branch_list)-1].pack(side="left",padx=(0,3))
-        else:
-            self.b_branch_update.pack_forget()
-            self.b_branch_colon.pack_forget()
-            for i in self.b_branch_list:
-                i.pack_forget()
-            self.b_branch_list=[]
+        pass
 
     def log(self):
         pass
@@ -1802,18 +1784,13 @@ class FileBrowser(tk.Toplevel):
 
         if repository_type == "public":
             # Public일때 실행하는 코드
-            if repository_address.startswith("https://github.com/"):
-                repo_url = repository_address + ".git"
-                clone_command = f"git clone {repo_url}"
-                current_directory = os.getcwd()  # 현재 작업 디렉토리 저장
-                target_directory = tk.filedialog.askdirectory()  # 클론할 대상 디렉토리 선택
-                os.chdir(target_directory)  # 작업 디렉토리 변경
-                exit_status = os.system(clone_command)
-                os.chdir(current_directory)  # 작업 디렉토리를 원래대로 변경
-                if exit_status == 0:
-                    messagebox.showinfo("Clone Successful", "Public repository cloned successfully.")
+            if repository_address.find("https://github.com/") == 0:
+                if ".git" not in repository_address:
+                    repository_address += ".git"
+                if subprocess.run(['git', 'clone' , repository_address], cwd=self.getdir(), capture_output=True).returncode == 0:
+                    self.update_status()
                 else:
-                    messagebox.showerror("Clone Failed", "Failed to clone public repository.")
+                    messagebox.showerror("Clone Failed", "Failed to clone from public repository.")
 
         elif repository_type == "private":
             # Private일때 실행하는 코드
