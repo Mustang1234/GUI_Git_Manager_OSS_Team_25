@@ -89,45 +89,45 @@ If you press git add without selecting a file, it will perform the git add . fea
 
 ###### 8. git rm --cached Button
 
-how to use?
-
-If you click on a file that is in the staged or committed state within a folder that contains the .git directory and then press the "git rm --cached" button, the selected file will be executed by the corresponding functionality.
+- how to use? If you click on a file that is in the staged or committed state within a folder that contains the .git directory and then press the "git rm --cached" button, the selected file will be executed by the corresponding functionality.
 
 ###### 9. Buttons related to the git status function:
 
-how to use? 
-When you enter a file or folder within a Git repository, the status of the file or folder is displayed using the Git status column. Pressing the "git status" button will sort the Git status entries. Clicking the "update_status" button in the upper-right corner will refresh the displayed statuses.
+- how to use?  When you enter a file or folder within a Git repository, the status of the file or folder is displayed using the Git status column. Pressing the "git status" button will sort the Git status entries. Clicking the "update_status" button in the upper-right corner will refresh the displayed statuses.
 
 ###### 10. Implementing button activation based on the Git status
 
-how to use? This function displays buttons based on the status of the selected file or folder. When you select a file or enter a folder, the corresponding buttons will appear based on the current state of the file or folder, according to the Git functionalities mentioned above.
+- how to use? This function displays buttons based on the status of the selected file or folder. When you select a file or enter a folder, the corresponding buttons will appear based on the current state of the file or folder, according to the Git functionalities mentioned above.
 
 ###### 11.Branch create function
 
-how to use? When you click the Branch button in the Git repository, a Git Branch Function window with five Git functions will appear. Here, click the Create Branch button. A small message window will appear, allowing you to enter a new branch name. After entering the name, click the OK button.
+- how to use? When you click the Branch button in the Git repository, a Git Branch Function window with five Git functions will appear. Here, click the Create Branch button. A small message window will appear, allowing you to enter a new branch name. After entering the name, click the OK button.
 
-If the operation is successful, a message window will appear, the branch creation function will be executed, and the Git Branch Function window will close.
+- If the operation is successful, a message window will appear, the branch creation function will be executed, and the Git Branch Function window will close.
 If a Git error occurs, such as an inappropriate branch name, an error message window will appear, and the branch creation function will not be executed.
 Note: Do not start the branch name with "-".
 
 ###### 12.Branch checkout function
 
-how to use? When you click the Checkout Branch button in the Git Branch Function window, it opens the checkout branch window that displays the branches. Click on the local branch you want to checkout. A message will appear indicating which branch you have checked out, and both the Git Branch Function window and the checkout branch window will close. Additionally, the contents of the tkbrowser's folder and the button indicating the current branch name in red will automatically refresh based on the branch that was checked out.
+- how to use? When you click the Checkout Branch button in the Git Branch Function window, it opens the checkout branch window that displays the branches. Click on the local branch you want to checkout. A message will appear indicating which branch you have checked out, and both the Git Branch Function window and the checkout branch window will close. Additionally, the contents of the tkbrowser's folder and the button indicating the current branch name in red will automatically refresh based on the branch that was checked out.
 
 ###### 13. Delete Button
-how to use? When you click the Branch button and then the Delete button, it displays a list of branches. Select the local branch you want to delete (optionally, there may be a feature to show remote branches as well). If the deletion is successful, a success message will appear.
+
+- how to use? When you click the Branch button and then the Delete button, it displays a list of branches. Select the local branch you want to delete (optionally, there may be a feature to show remote branches as well). If the deletion is successful, a success message will appear.
 
 ###### 14. Rename Button
-how to use? When you click the Branch button and then the Rename button, it displays a list of branches. Select the local branch you want to rename. If the renaming is successful, a success message will appear.
 
-If the branch name violates the naming rules such as containing spaces, question marks, asterisks, or other prohibited characters, an error message will be displayed to indicate the issue. However, it is not recommended to start the branch name with a hyphen (-) as it can be confused with command options. In such cases, the error message will provide guidelines on proper usage.
+- how to use? When you click the Branch button and then the Rename button, it displays a list of branches. Select the local branch you want to rename. If the renaming is successful, a success message will appear.
+
+- If the branch name violates the naming rules such as containing spaces, question marks, asterisks, or other prohibited characters, an error message will be displayed to indicate the issue. However, it is not recommended to start the branch name with a hyphen (-) as it can be confused with command options. In such cases, the error message will provide guidelines on proper usage.
 
 ###### 15. Log Button
 
-how to use? In the Git repository's working folder, the 'Log' button is activated. When you click it, the log of the repository is displayed along with the graph and commit messages, using the log function. If you want to view detailed information about each commit, you can commit first and then click the button, represented by a number 7
+- how to use? In the Git repository's working folder, the 'Log' button is activated. When you click it, the log of the repository is displayed along with the graph and commit messages, using the log function. If you want to view detailed information about each commit, you can commit first and then click the button, represented by a number 7
 
 ###### 16 . Clone Button
-how to use? Please enter the HTTP address you want to clone. Once you enter it, a button will appear asking whether the repository is public or private. Enter "public" or "private". If it's private, you'll need to enter your ID and token for the clone to proceed. 
+
+- how to use? Please enter the HTTP address you want to clone. Once you enter it, a button will appear asking whether the repository is public or private. Enter "public" or "private". If it's private, you'll need to enter your ID and token for the clone to proceed. 
 Note: Our program does not automatically append ".git" to the address. You need to provide the address including ".git".
 
 The config.ini file, which contains the ID and token information, will be stored in the current working directory. The working directory refers to the directory where the program is being executed. Therefore, the location of the config.ini file depends on the location where the code is being run. It is important to note that the config.ini file should be properly secured and encrypted. Additional security measures should be implemented to safely store and manage sensitive information.
