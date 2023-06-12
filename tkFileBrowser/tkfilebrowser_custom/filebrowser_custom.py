@@ -2381,12 +2381,7 @@ class FileBrowser(tk.Toplevel):
                                         config.write(config_file)
                             else:
                                 messagebox.showerror("Clone Failed", "Failed to clone from private repository.")
-                            
-                            config.set('GitHub_ID', ID)
-                            config.set('GitHub_access_token', access_token)
-                            with open(config_file, 'w') as config_file:
-                                config.write(config_file)
-
+                        
                     else:
                         messagebox.showerror("Invalid Repository Type", "Invalid repository type specified.")
                 else:
