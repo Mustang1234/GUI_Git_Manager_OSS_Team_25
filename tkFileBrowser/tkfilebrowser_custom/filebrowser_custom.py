@@ -50,6 +50,7 @@ from tooltip_custom import TooltipTreeWrapper
 from recent_files_custom import RecentFiles
 import configparser
 
+
 if OSNAME == 'nt':
     from win32com.shell import shell, shellcon
 
@@ -2350,7 +2351,26 @@ class FileBrowser(tk.Toplevel):
 
                     elif repository_type == "private":
                         # Private일때 실행하는 코드
-                        access_token = simpledialog.askstring("GitHub Clone", "Enter the access token:")
+                        ID = repository_address[19:19+repository_address[19:].find("/")]
+                        found = "not found"
+                        config_file = 'config.ini'
+                        config = configparser.ConfigParser()
+                        config.read(config_file)
+                        for i in range(1,len(config)):
+                            if config[str(i)]['GitHub_access_ID'] == ID:
+                                found = str(i)   
+                                break
+                        if found != "not found":
+                            access_token = config[found]['GitHub_access_token']
+                        else:
+                            access_token = simpledialog.askstring("GitHub Clone", "Enter the access token:")
+                            num=str(len(config))
+                            config[num] = {}
+                            config[num]['GitHub_access_ID'] = ID
+                            config[num]['GitHub_access_token'] = access_token
+                            with open(config_file, 'w') as config_file:
+                                config.write(config_file)
+                        
                         if access_token != None:
                             repository_address_1 = repository_address[:repository_address.find("https://")+len("https://")]
                             repository_address_2 = repository_address[repository_address.find("https://")+len("https://"):]
@@ -2359,6 +2379,11 @@ class FileBrowser(tk.Toplevel):
                                 self.update_status()
                             else:
                                 messagebox.showerror("Clone Failed", "Failed to clone from private repository.")
+                            
+                            config.set('GitHub_ID', ID)
+                            config.set('GitHub_access_token', access_token)
+                            with open(config_file, 'w') as config_file:
+                                config.write(config_file)
 
                     else:
                         messagebox.showerror("Invalid Repository Type", "Invalid repository type specified.")
