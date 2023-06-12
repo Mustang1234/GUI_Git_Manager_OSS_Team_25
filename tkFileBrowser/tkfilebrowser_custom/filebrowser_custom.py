@@ -2336,20 +2336,20 @@ class FileBrowser(tk.Toplevel):
     def clone(self):
         repository_address = simpledialog.askstring("GitHub Clone", "Enter the GitHub repository address:")
         if repository_address != None:
-            repository_type = simpledialog.askstring("GitHub Clone", "Enter the repository type (public or private):")
+            repository_type = messagebox.askyesno("Visibility", "Public?\nYes : public / No : private")
             if repository_type != None:
                 if repository_address.find("https://github.com/") == 0:
                     if ".git" not in repository_address:
                         repository_address += ".git"
 
-                    if repository_type == "public":
+                    if repository_type == True:
                         # Public일때 실행하는 코드
                             if subprocess.run(['git', 'clone' , repository_address], cwd=self.getdir(), capture_output=True).returncode == 0:
                                 self.update_status()
                             else:
                                 messagebox.showerror("Clone Failed", "Failed to clone from public repository.")
 
-                    elif repository_type == "private":
+                    elif repository_type == False:
                         # Private일때 실행하는 코드
                         ID = repository_address[19:19+repository_address[19:].find("/")]
                         found = "not found"
