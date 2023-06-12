@@ -1824,6 +1824,7 @@ class FileBrowser(tk.Toplevel):
                     #headbr[-1]에 헤드가 가리키는 브랜치가 있다.
             
             # 로컬 브랜치
+            curbr = None
             cmdL=subprocess.run(['git', 'branch'], cwd=self._get_git_directory(), capture_output=True).stdout.decode().strip().split("\n")
             for j in range(len(cmdL)):
                 if j>=len(cmdL):
@@ -1907,7 +1908,7 @@ class FileBrowser(tk.Toplevel):
             ttk.Label(root_del, text="[Remote branch]").grid(row=2, column=0, columnspan=5)
 
             arrange=0   # 원격 브랜치 나타내기
-            if i>0: # 원격 브랜치가 있을 때
+            if i>0 and curbr != None: # 원격 브랜치가 있을 때
 
                 for i in cmd:
                     q,r=divmod(arrange,5)
@@ -1940,9 +1941,8 @@ class FileBrowser(tk.Toplevel):
             for j in cmdL:
                 q,rd=divmod(arrange,5)
                 qd,r=divmod(arr,5)
-                if j == curbr :
+                if j == curbr and curbr != None:
                     style.configure("Custom.TButton", foreground="red")
-
                     head_local = ttk.Button(root_del, text=j, command=lambda id=j: self.clicked_to_delete(curbr, id, root, root_del), style="Custom.TButton")
                     head_local.grid(row=q+6, column=r)
 
@@ -2003,7 +2003,7 @@ class FileBrowser(tk.Toplevel):
             ttk.Label(root_ren, text="[Remote branch]").grid(row=2, column=0, columnspan=5)
 
             arrange=0   # 원격 브랜치 나타내기
-            if i>0: # 원격 브랜치가 있을 때
+            if i>0 and curbr != None: # 원격 브랜치가 있을 때
 
                 for i in cmd:
                     q,r=divmod(arrange,5)
@@ -2037,7 +2037,7 @@ class FileBrowser(tk.Toplevel):
             for j in cmdL:
                 q,rd=divmod(arrange,5)
                 qd,r=divmod(arr,5)
-                if j == curbr :
+                if j == curbr and curbr != None:
                     style.configure("Custom.TButton", foreground="red")
 
                     head_local = ttk.Button(root_ren, text=j, command=lambda id=j: self.clicked_to_rename(id,root,root_ren), style="Custom.TButton")
@@ -2099,7 +2099,7 @@ class FileBrowser(tk.Toplevel):
             ttk.Label(root_che, text="[Remote branch]").grid(row=2, column=0, columnspan=5)
 
             arrange=0   # 원격 브랜치 나타내기
-            if i>0: # 원격 브랜치가 있을 때
+            if i>0 and curbr != None: # 원격 브랜치가 있을 때
 
                 for i in cmd:
                     q,r=divmod(arrange,5)
@@ -2132,7 +2132,7 @@ class FileBrowser(tk.Toplevel):
             for j in cmdL:
                 q,rd=divmod(arrange,5)
                 qd,r=divmod(arr,5)
-                if j == curbr :
+                if j == curbr and curbr != None:
                     style.configure("Custom.TButton", foreground="red")
 
                     head_local = ttk.Button(root_che, text=j, command=lambda id=j: self.clicked_to_checkout("Y", id, root, root_che), style="Custom.TButton")
@@ -2211,7 +2211,7 @@ class FileBrowser(tk.Toplevel):
             ttk.Label(root_mer, text="[Remote branch]").grid(row=2, column=0, columnspan=5)
 
             arrange=0   # 원격 브랜치 나타내기
-            if i>0: # 원격 브랜치가 있을 때
+            if i>0 and curbr != None: # 원격 브랜치가 있을 때
 
                 for i in cmd:
                     q,r=divmod(arrange,5)
@@ -2244,7 +2244,7 @@ class FileBrowser(tk.Toplevel):
             for j in cmdL:
                 q,rd=divmod(arrange,5)
                 qd,r=divmod(arr,5)
-                if j == curbr :
+                if j == curbr and curbr != None:
                     style.configure("Custom.TButton", foreground="red")
 
                     head_local = ttk.Button(root_mer, text=j, command=lambda id=j: self.clicked_to_merge(id, root, root_mer), style="Custom.TButton")
@@ -2269,7 +2269,10 @@ class FileBrowser(tk.Toplevel):
             style.configure("Custom.TLabel", foreground="red")
             self.l_branch_head.configure(style="Custom.TLabel")
             cmd, cmdL, i, j, headbr, curbr = self.return_branch_list()
-            self.l_branch_head["text"] = "Head -> " + curbr
+            if curbr == None:
+                self.l_branch_head["text"] = "No branch yet"
+            else:
+                self.l_branch_head["text"] = "Head -> " + curbr
             self.l_branch_head.pack(side="right", padx=(0,4))
         else:
             self.l_branch_head.pack_forget()
@@ -2301,25 +2304,28 @@ class FileBrowser(tk.Toplevel):
             return frame
                     
         def spec(commit_hash):
-            specs=[_ for _ in subprocess.run(['git', 'log', '-1', '-U', commit_hash], cwd=self._get_git_directory(), capture_output=True).stdout.decode().strip().split("\n")][:100]
+            specs=[_ for _ in subprocess.run(['git', 'log', '-1', '-U', commit_hash], cwd=self._get_git_directory(), capture_output=True).stdout.decode().strip().split("\n")][:50]
             frame = open_scrolls(len(max(specs, key=len)*6), len(specs)*6)
             for i in range(len(specs)):
                 ttk.Label(frame, text=specs[i]).grid(row=i+2, column=0, sticky="w")
 
         if self.is_git_repo():
-            logs=[_[:_.index(" ")] for _ in subprocess.run(['git', 'log', '--pretty=oneline'], cwd=self._get_git_directory(), capture_output=True).stdout.decode().strip().split("\n")]
+            logs=[_[:_.find(" ")] for _ in subprocess.run(['git', 'log', '--pretty=oneline'], cwd=self._get_git_directory(), capture_output=True).stdout.decode().strip().split("\n")]
             glog=[_ for _ in subprocess.run(['git', 'log', '--pretty=oneline', '--graph'], cwd=self._get_git_directory(), capture_output=True).stdout.decode().strip().split("\n")]
-            frame = open_scrolls(len(max(glog, key=len)*6), len(glog)*6)
-            for i in range(len(glog)):
-                graph=glog[i]
-                for j in range(len(logs)):
-                    if logs[j] in glog[i]:
-                        graph=glog[i][:glog[i].index(logs[j])]
-                        ttk.Button(frame, text=logs[j][:7], command=(lambda d: lambda: spec(d))(logs[j])).grid(column=1, row=i, sticky="w")
-                        ttk.Label(frame, text=glog[i][glog[i].index(logs[j])+40:glog[i].index(logs[j])+200]).grid(column=2, row=i, sticky="w")
-                        break
-                label=ttk.Label(frame, text=graph, font=("Courier", 15))
-                label.grid(column=0, row=i, sticky="w")
+            if len(glog) != 1 or glog[0] != '':
+                frame = open_scrolls(len(max(glog, key=len)*6), len(glog)*6)
+                for i in range(len(glog)):
+                    graph=glog[i]
+                    for j in range(len(logs)):
+                        if logs[j] in glog[i]:
+                            graph=glog[i][:glog[i].find(logs[j])]
+                            ttk.Button(frame, text=logs[j][:7], command=(lambda d: lambda: spec(d))(logs[j])).grid(column=1, row=i, sticky="w")
+                            ttk.Label(frame, text=glog[i][glog[i].find(logs[j])+40:glog[i].find(logs[j])+200]).grid(column=2, row=i, sticky="w")
+                            break
+                    label=ttk.Label(frame, text=graph, font=("Courier", 15))
+                    label.grid(column=0, row=i, sticky="w")
+            else:
+                messagebox.showerror("Error", "No commits exist")
 
     def clone(self):
         pass
