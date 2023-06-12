@@ -48,7 +48,7 @@ from autoscrollbar_custom import AutoScrollbar
 from path_button_custom import PathButton
 from tooltip_custom import TooltipTreeWrapper
 from recent_files_custom import RecentFiles
-
+import configparser
 
 if OSNAME == 'nt':
     from win32com.shell import shell, shellcon
