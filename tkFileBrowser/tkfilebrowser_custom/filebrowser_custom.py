@@ -2360,16 +2360,11 @@ class FileBrowser(tk.Toplevel):
                             if config[str(i)]['GitHub_access_ID'] == ID:
                                 found = str(i)   
                                 break
+                            
                         if found != "not found":
                             access_token = config[found]['GitHub_access_token']
                         else:
                             access_token = simpledialog.askstring("GitHub Clone", "Enter the access token:")
-                            num=str(len(config))
-                            config[num] = {}
-                            config[num]['GitHub_access_ID'] = ID
-                            config[num]['GitHub_access_token'] = access_token
-                            with open(config_file, 'w') as config_file:
-                                config.write(config_file)
                         
                         if access_token != None:
                             repository_address_1 = repository_address[:repository_address.find("https://")+len("https://")]
@@ -2377,6 +2372,13 @@ class FileBrowser(tk.Toplevel):
                             repository_address_token = repository_address_1 + access_token + ":x-oauth-basic@" + repository_address_2
                             if subprocess.run(['git', 'clone' , repository_address_token], cwd=self.getdir(), capture_output=True).returncode == 0:
                                 self.update_status()
+                                if found == "not found":
+                                    num=str(len(config))
+                                    config[num] = {}
+                                    config[num]['GitHub_access_ID'] = ID
+                                    config[num]['GitHub_access_token'] = access_token
+                                    with open(config_file, 'w') as config_file:
+                                        config.write(config_file)
                             else:
                                 messagebox.showerror("Clone Failed", "Failed to clone from private repository.")
                             
