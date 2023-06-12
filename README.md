@@ -178,4 +178,4 @@ Copy your Python path and add it, along with the Python path\Scripts, as two sep
 
 
 2. To update pip when a specific module fails to download, please enter the following command to upgrade pip to the latest version:</br>
-```pip install --update pip```
+```pip install --upgrade pip```
