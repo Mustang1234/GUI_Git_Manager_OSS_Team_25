@@ -21,6 +21,7 @@ Main class
 """
 import os
 import tkinter as tk
+import tkinter.simpledialog as simpledialog
 from tkinter import messagebox
 import subprocess
 import tkfilebrowser
@@ -47,7 +48,6 @@ from autoscrollbar_custom import AutoScrollbar
 from path_button_custom import PathButton
 from tooltip_custom import TooltipTreeWrapper
 from recent_files_custom import RecentFiles
-
 
 
 if OSNAME == 'nt':
@@ -143,7 +143,7 @@ class FileBrowser(tk.Toplevel):
 
         self.rowconfigure(2, weight=1)
         self.columnconfigure(0, weight=1)
-
+        
         self.mode = mode
         self.result = ""
         self.foldercreation = foldercreation
@@ -1664,7 +1664,7 @@ class FileBrowser(tk.Toplevel):
         message = "Do you want to commit this staged files?\n\n[ Staged changes ] :\n" + "\n".join(staged_list)
         is_ok_commit = messagebox.askquestion("Staged file list to commit", message)
         if is_ok_commit == 'yes':
-            msg = tk.simpledialog.askstring("commit", "Enter your commit message: ") #커밋메세지 작성
+            msg = simpledialog.askstring("commit", "Enter your commit message: ") #커밋메세지 작성
         
             if msg and msg.strip(): # 커밋 메세지 작성 후 "OK" 버튼이 눌렀을 때
                 subprocess.run(['git', 'commit', '-m', msg], cwd=dir)
@@ -1749,11 +1749,17 @@ class FileBrowser(tk.Toplevel):
 
         while True:
             new_path = tkfilebrowser.askopendirname(parent=self.parent)
+            print(new_path, new_path == "")
+            if new_path == "":
+                return
 
             new_file_name = os.path.basename(old_path)
             while True:
                 # Ask for new file name
-                new_file_name = tk.simpledialog.askstring("New file name", "Enter the new file name", initialvalue=new_file_name)
+                new_file_name = simpledialog.askstring("New file name", "Enter the new file name", initialvalue=new_file_name)
+                print(new_file_name, new_file_name == None)
+                if new_file_name == None:
+                    return
                 if not new_file_name:
                     return
                 new_path = os.path.join(new_path, new_file_name)
@@ -1770,7 +1776,6 @@ class FileBrowser(tk.Toplevel):
                 messagebox.showerror("Not in git repository")
             else:
                 break
-
 
         try:
             subprocess.run(["git", "mv", old_path, new_path], cwd=self._get_git_directory(), check=True, shell=False, stderr=subprocess.PIPE)
@@ -1840,7 +1845,7 @@ class FileBrowser(tk.Toplevel):
         dir = self.getdir()
         
         if self.is_git_repo():
-            branch_name=tk.simpledialog.askstring("Create Branch", "Enter the new branch name: ")
+            branch_name=simpledialog.askstring("Create Branch", "Enter the new branch name: ")
 
             if branch_name and branch_name.strip(): # 브랜치 이름 작성하고 "OK" 버튼이 눌렀을 때
                 try:
@@ -1960,7 +1965,7 @@ class FileBrowser(tk.Toplevel):
     def clicked_to_rename(self, old_branch_name, root, root_ren):
             dir=self.getdir()
             
-            new_branch_name=tk.simpledialog.askstring("Rename Branch", "Enter the new branch name for rename the branch:")
+            new_branch_name=simpledialog.askstring("Rename Branch", "Enter the new branch name for rename the branch:")
             if new_branch_name and new_branch_name.strip(): # rename할 브랜치 이름 작성하고 "OK" 버튼이 눌렀을 때
                 try:
                     result = subprocess.run(['git', 'branch', '-m', old_branch_name, new_branch_name], cwd=dir, stderr=subprocess.PIPE)
@@ -2328,8 +2333,38 @@ class FileBrowser(tk.Toplevel):
                 messagebox.showerror("Error", "No commits exist")
 
     def clone(self):
-        pass
-        # 클론누르면 창 띄워서 http어쩌구 또는 로컬 주소 받아서 클론해오기 하는거 만들기
+        repository_address = simpledialog.askstring("GitHub Clone", "Enter the GitHub repository address:")
+        if repository_address != None:
+            repository_type = simpledialog.askstring("GitHub Clone", "Enter the repository type (public or private):")
+            if repository_type != None:
+                if repository_address.find("https://github.com/") == 0:
+                    if ".git" not in repository_address:
+                        repository_address += ".git"
+
+                    if repository_type == "public":
+                        # Public일때 실행하는 코드
+                            if subprocess.run(['git', 'clone' , repository_address], cwd=self.getdir(), capture_output=True).returncode == 0:
+                                self.update_status()
+                            else:
+                                messagebox.showerror("Clone Failed", "Failed to clone from public repository.")
+
+                    elif repository_type == "private":
+                        # Private일때 실행하는 코드
+                        access_token = simpledialog.askstring("GitHub Clone", "Enter the access token:")
+                        if access_token != None:
+                            repository_address_1 = repository_address[:repository_address.find("https://")+len("https://")]
+                            repository_address_2 = repository_address[repository_address.find("https://")+len("https://"):]
+                            repository_address_token = repository_address_1 + access_token + ":x-oauth-basic@" + repository_address_2
+                            if subprocess.run(['git', 'clone' , repository_address_token], cwd=self.getdir(), capture_output=True).returncode == 0:
+                                self.update_status()
+                            else:
+                                messagebox.showerror("Clone Failed", "Failed to clone from private repository.")
+
+                    else:
+                        messagebox.showerror("Invalid Repository Type", "Invalid repository type specified.")
+                else:
+                    messagebox.showerror("Invalid Repository Name", "Invalid repository Name.")
+
 
     def quit(self):
         """Destroy dialog."""
