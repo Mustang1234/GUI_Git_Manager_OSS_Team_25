@@ -47,7 +47,8 @@ from autoscrollbar_custom import AutoScrollbar
 from path_button_custom import PathButton
 from tooltip_custom import TooltipTreeWrapper
 from recent_files_custom import RecentFiles
-
+from github import Github,GithubException
+import configparser
 
 
 if OSNAME == 'nt':
@@ -143,6 +144,9 @@ class FileBrowser(tk.Toplevel):
 
         self.rowconfigure(2, weight=1)
         self.columnconfigure(0, weight=1)
+        self.config_file = 'config.ini'
+        self.config = configparser.ConfigParser()
+        self.config.read(self.config_file)
 
         self.mode = mode
         self.result = ""
@@ -1793,8 +1797,60 @@ class FileBrowser(tk.Toplevel):
         # 로그 창 만들어서 로그 띄우는 기능
 
     def clone(self):
-        pass
-        # 클론누르면 창 띄워서 http어쩌구 또는 로컬 주소 받아서 클론해오기 하는거 만들기
+        repository_address = tk.simpledialog.askstring("GitHub Clone", "Enter the GitHub repository address:")
+        repository_type = tk.simpledialog.askstring("GitHub Clone", "Enter the repository type (public or private):")
+
+        if repository_type == "public":
+            # Public일때 실행하는 코드
+            if repository_address.startswith("https://github.com/"):
+                repo_url = repository_address + ".git"
+                clone_command = f"git clone {repo_url}"
+                current_directory = os.getcwd()  # 현재 작업 디렉토리 저장
+                target_directory = tk.filedialog.askdirectory()  # 클론할 대상 디렉토리 선택
+                os.chdir(target_directory)  # 작업 디렉토리 변경
+                exit_status = os.system(clone_command)
+                os.chdir(current_directory)  # 작업 디렉토리를 원래대로 변경
+                if exit_status == 0:
+                    messagebox.showinfo("Clone Successful", "Public repository cloned successfully.")
+                else:
+                    messagebox.showerror("Clone Failed", "Failed to clone public repository.")
+
+        elif repository_type == "private":
+            # Private일때 실행하는 코드
+            repository_id = tk.simpledialog.askstring("GitHub Clone", "Enter the GitHub repository ID:")
+            access_token = tk.simpledialog.askstring("GitHub Clone", "Enter the access token:")
+
+            try:
+                # 토큰 확인
+                g = Github(access_token)
+                repo = g.get_repo(repository_id)  # repository id 저장
+                clone_command = f"git clone {repo.ssh_url}"
+                current_directory = os.getcwd()  # 현재 작업 디렉토리 저장
+                target_directory = tk.filedialog.askdirectory()  # 클론할 대상 디렉토리 선택
+                os.chdir(target_directory)  # 작업 디렉토리 변경
+                exit_status = os.system(clone_command)
+                os.chdir(current_directory)  # 작업 디렉토리를 원래대로 변경
+                if exit_status == 0:
+                    messagebox.showinfo("Clone Successful", "Private repository cloned successfully.")
+                else:
+                    messagebox.showerror("Clone Failed", "Failed to clone private repository.")
+
+                # ID와 토큰을 구성 파일에 저장
+                self.config.set('GitHub', 'repository_id', repository_id)
+                self.config.set('GitHub', 'access_token', access_token)
+
+                # 구성 파일 저장
+                with open(self.config_file, 'w') as config_file:
+                    self.config.write(config_file)
+
+            except GithubException as e:
+                messagebox.showerror("Error", f"An error occurred: {str(e)}")
+            except Exception as e:
+                messagebox.showerror("Error", f"An error occurred: {str(e)}")
+
+        else:
+            messagebox.showerror("Invalid Repository Type", "Invalid repository type specified.")
+
 
     def quit(self):
         """Destroy dialog."""
