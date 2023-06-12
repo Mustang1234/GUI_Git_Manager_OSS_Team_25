@@ -2287,7 +2287,7 @@ class FileBrowser(tk.Toplevel):
             style.theme_use("clam")
             root.configure(bg=style.lookup('TFrame', 'background'))
             container = ttk.Frame(root)
-            canvas = tk.Canvas(container, width=max(min(800, width),200), height=max(min(500, height),100))
+            canvas = tk.Canvas(container, width=max(min(800, width),20), height=max(min(500, height),10))
             scrollbar_Y = ttk.Scrollbar(container, orient="vertical", command=canvas.yview)
             scrollbar_X = ttk.Scrollbar(container, orient="horizontal", command=canvas.xview)
             frame = ttk.Frame(canvas)
