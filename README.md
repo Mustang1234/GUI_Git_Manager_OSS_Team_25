@@ -23,8 +23,7 @@ The language was implemented using python.
 3. Turn on the cmd window
 - ```pip install tkfilebrowser```
 - ```pip install pywin32```
-- ```pip install PyGithub```
-- ```pip install configpraser```
+- ```pip install configparser```
 
 </br>Download the required files by entering the commands in turn.  (If there is a problem, please solve it through ["Reference in case of a problem"](#Reference-in-case-of-a-problem) 1 and 2.)
 
