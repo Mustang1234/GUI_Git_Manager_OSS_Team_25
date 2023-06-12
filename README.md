@@ -19,8 +19,9 @@ The language was implemented using python.
 
 #### Install and prepare execution
 1. Go to the GUI_Git_Manager_OSS_Team_25 repository and press the Code -> Download ZIP button to download and extract the file wherever you want.
-2. Install python 3.11 including pip. (If you don't do custom, pip is usually installed automatically.)
-3. Turn on the cmd window
+2. Install Git from here! https://git-scm.com/
+3. Install python 3.11 including pip. (If you don't do custom, pip is usually installed automatically.)
+4. Turn on the cmd window
 - ```pip install tkfilebrowser```
 - ```pip install pywin32```
 - ```pip install configparser```
